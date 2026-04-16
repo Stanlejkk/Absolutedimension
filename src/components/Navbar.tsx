@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "../i18n";
 import { useCart } from "../lib/CartContext";
+import { useAuth } from "../lib/AuthContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -10,6 +11,8 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const { t, locale, toggle } = useLocale();
   const { count: cartCount, openCart } = useCart();
+  const { user } = useAuth();
+  const accountHref = user ? "/account" : "/login";
 
   const links = useMemo(
     () => [
@@ -93,6 +96,20 @@ export default function Navbar() {
           >
             <SearchIcon />
           </button>
+          <Link
+            to={accountHref}
+            aria-label={t("auth.navAria")}
+            title={user ? t("auth.navAccount") : t("auth.navSignIn")}
+            className="relative grid place-items-center h-9 w-9 rounded-full text-bone hover:bg-bone/10 transition"
+          >
+            <AccountIcon />
+            {user?.role === "admin" && (
+              <span
+                aria-hidden="true"
+                className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-gold"
+              />
+            )}
+          </Link>
           <button
             type="button"
             onClick={openCart}
@@ -147,6 +164,38 @@ export default function Navbar() {
                 transition={{ delay: 0.05 * links.length, duration: 0.4 }}
                 className="pt-4 border-t border-ink/10"
               >
+                {user ? (
+                  <Link to="/account" className="block font-display text-2xl text-ink">
+                    {t("auth.navAccount")}
+                  </Link>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Link to="/login" className="block font-display text-2xl text-ink">
+                      {t("auth.navSignIn")}
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="block text-sm tracking-wider2 uppercase text-ink/70 hover:text-ink"
+                    >
+                      {t("auth.navRegister")}
+                    </Link>
+                  </div>
+                )}
+                {user?.role === "admin" && (
+                  <Link
+                    to="/admin"
+                    className="mt-2 block text-sm tracking-wider2 uppercase text-ink/70 hover:text-ink"
+                  >
+                    {t("auth.account.adminPanel")}
+                  </Link>
+                )}
+              </motion.li>
+              <motion.li
+                initial={{ y: 8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.05 * (links.length + 1), duration: 0.4 }}
+                className="pt-4 border-t border-ink/10"
+              >
                 <button
                   type="button"
                   onClick={toggle}
@@ -192,6 +241,15 @@ function BagIcon() {
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M5 8h14l-1.2 12.1a1.5 1.5 0 0 1-1.5 1.4H7.7a1.5 1.5 0 0 1-1.5-1.4L5 8Z" />
       <path d="M9 8V6a3 3 0 0 1 6 0v2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function AccountIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0" strokeLinecap="round" />
     </svg>
   );
 }
