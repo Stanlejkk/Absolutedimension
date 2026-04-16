@@ -1,26 +1,38 @@
 import { motion } from "framer-motion";
 
-const entries = [
-  {
-    tag: "Editorial",
-    title: "Notes on linen",
-    excerpt:
-      "A slow material that records every gesture. We consider its creases part of the design.",
-    hue: "#e9dfcf",
-  },
+type Entry = {
+  tag: string;
+  title: string;
+  excerpt: string;
+  hue: string;
+  image?: string;
+  href: string;
+};
+
+const entries: Entry[] = [
   {
     tag: "Lookbook",
-    title: "Edition 07 — in motion",
+    title: "Ready to Fly",
     excerpt:
-      "Shot on the Baltic coast at first light. The silhouettes speak to stillness.",
-    hue: "#c8b496",
+      "The Summer edition — silk, cotton velvet and hand-finished silhouettes, photographed on the move.",
+    hue: "#e9dfcf",
+    href: "https://www.absolutdimension.com/en/collections/all",
   },
   {
-    tag: "Journal",
-    title: "On keeping a garment",
+    tag: "Editorial",
+    title: "SM.ART Wardrobe",
     excerpt:
-      "A short guide to care: wash rarely, fold carefully, repair always.",
+      "A thoughtful wardrobe, orderly and sublime — cut once, considered twice, and made to serve for years.",
+    hue: "#c8b496",
+    href: "https://www.absolutdimension.com/en",
+  },
+  {
+    tag: "Atelier",
+    title: "Made in Warsaw",
+    excerpt:
+      "Fabrics sourced in Italy and France, cut and hand-finished by a small atelier on Okopowa, Warsaw.",
     hue: "#4c4237",
+    href: "https://www.absolutdimension.com/en",
   },
 ];
 
@@ -41,7 +53,9 @@ export default function Editorial() {
             </h2>
           </motion.div>
           <a
-            href="#"
+            href="https://www.absolutdimension.com/en/collections/all"
+            target="_blank"
+            rel="noreferrer"
             className="group inline-flex items-center gap-2 text-sm tracking-wide text-muted hover:text-ink"
           >
             All entries
@@ -53,7 +67,9 @@ export default function Editorial() {
           {entries.map((e, i) => (
             <motion.a
               key={e.title}
-              href="#"
+              href={e.href}
+              target="_blank"
+              rel="noreferrer"
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
@@ -64,23 +80,31 @@ export default function Editorial() {
                 className="relative aspect-[4/5] overflow-hidden"
                 style={{ backgroundColor: e.hue }}
               >
-                <motion.div
-                  className="absolute inset-0 grid place-items-center"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <svg viewBox="0 0 200 250" className="h-2/3 w-auto opacity-60" aria-hidden>
-                    <rect x="20" y="20" width="160" height="210" fill="none" stroke="currentColor" strokeOpacity="0.25" />
-                    <path
-                      d="M40 200 Q100 120 160 200"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeOpacity="0.35"
-                      strokeWidth="1"
-                    />
-                    <circle cx="100" cy="90" r="26" fill="none" stroke="currentColor" strokeOpacity="0.35" />
-                  </svg>
-                </motion.div>
+                {e.image ? (
+                  <img
+                    src={e.image}
+                    alt={e.title}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                ) : (
+                  <motion.div
+                    className="absolute inset-0 grid place-items-center"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <svg viewBox="0 0 200 250" className="h-2/3 w-auto opacity-60" aria-hidden>
+                      <rect x="20" y="20" width="160" height="210" fill="none" stroke="currentColor" strokeOpacity="0.25" />
+                      <path
+                        d="M40 200 Q100 120 160 200"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeOpacity="0.35"
+                        strokeWidth="1"
+                      />
+                      <circle cx="100" cy="90" r="26" fill="none" stroke="currentColor" strokeOpacity="0.35" />
+                    </svg>
+                  </motion.div>
+                )}
                 <div className="absolute top-4 left-4">
                   <span className="bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
                     {e.tag}
