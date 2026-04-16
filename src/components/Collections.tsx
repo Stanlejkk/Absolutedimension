@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { collections, getProductsByCollection } from "../lib/data";
 
@@ -43,7 +43,7 @@ export default function Collections() {
 
         <ul className="divide-y divide-bone/10 border-y border-bone/10">
           {collections.map((c, i) => (
-            <CollectionRow key={c.slug} slug={c.slug} name={c.name} image={c.image} tagline={c.description} i={i} />
+            <CollectionRow key={c.slug} slug={c.slug} name={c.name} tagline={c.description} i={i} />
           ))}
         </ul>
 
@@ -70,17 +70,14 @@ export default function Collections() {
 function CollectionRow({
   slug,
   name,
-  image,
   tagline,
   i,
 }: {
   slug: string;
   name: string;
-  image: string;
   tagline: string;
   i: number;
 }) {
-  const [hovered, setHovered] = useState(false);
   const pieceCount = getProductsByCollection(slug).length;
 
   return (
@@ -89,8 +86,6 @@ function CollectionRow({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.8, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       <Link
         to={`/collections/${slug}`}
@@ -108,20 +103,6 @@ function CollectionRow({
         <span className="col-span-3 md:col-span-2 justify-self-end text-xs tracking-wider2 text-bone/60">
           {pieceCount} pieces
         </span>
-
-        {/* Hover thumbnail */}
-        <motion.div
-          aria-hidden
-          initial={false}
-          animate={{
-            opacity: hovered ? 1 : 0,
-            x: hovered ? 0 : -20,
-          }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-none hidden lg:block absolute right-[26%] top-1/2 -translate-y-1/2 w-40 aspect-[3/4] overflow-hidden bg-bone/10"
-        >
-          <img src={image} alt="" loading="lazy" className="h-full w-full object-cover object-top" />
-        </motion.div>
 
         <motion.span
           aria-hidden

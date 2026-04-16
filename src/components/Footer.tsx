@@ -125,24 +125,7 @@ export default function Footer() {
           </div>
         </motion.div>
 
-        <div className="relative -mx-6 md:-mx-10 overflow-hidden py-10">
-          <motion.div
-            className="flex whitespace-nowrap gap-14 font-display italic text-[16vw] leading-none text-bone/90"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 45, ease: "linear", repeat: Infinity }}
-          >
-            <span>Absolut Dimension</span>
-            <span className="text-gold not-italic">—</span>
-            <span>SM.ART Wardrobe</span>
-            <span className="text-gold not-italic">—</span>
-            <span>Absolut Dimension</span>
-            <span className="text-gold not-italic">—</span>
-            <span>SM.ART Wardrobe</span>
-            <span className="text-gold not-italic">—</span>
-          </motion.div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-8 border-t border-bone/10 text-xs tracking-wide text-bone/60">
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-10 mt-10 border-t border-bone/10 text-xs tracking-wide text-bone/60">
           <p>© {new Date().getFullYear()} Absolut Dimension Sp. z o.o. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <a href="#" className="hover:text-bone">Privacy</a>
