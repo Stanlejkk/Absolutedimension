@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { useLocale, type LocalizedString } from "../i18n";
 import MagneticButton from "./motion/MagneticButton";
 import SplitText from "./motion/SplitText";
+import Grain from "./motion/Grain";
 
 interface Slide {
   image: string;
@@ -111,6 +112,25 @@ export default function Hero() {
           <div className="absolute inset-0 bg-gradient-to-b from-ink/30 via-ink/20 to-ink/70" />
         </motion.div>
       </AnimatePresence>
+
+      {/* Editorial film grain — a breath of 35mm noise that moves with
+          the image plane, softening the gradient edges. */}
+      <Grain opacity={0.18} className="z-[2]" />
+      {/* A slow shimmer sweep across the hero, once per minute-ish, gives
+          the still a living-photograph quality without shouting. */}
+      <motion.span
+        aria-hidden
+        initial={{ x: "-120%" }}
+        animate={{ x: ["-120%", "120%"] }}
+        transition={{
+          duration: 9,
+          delay: 2,
+          repeat: Infinity,
+          repeatDelay: 16,
+          ease: [0.76, 0, 0.24, 1],
+        }}
+        className="pointer-events-none absolute inset-y-0 z-[3] w-[40%] bg-gradient-to-r from-transparent via-bone/5 to-transparent mix-blend-soft-light"
+      />
 
       <motion.div
         style={{ y: smoothTextY, opacity: textOpacity }}

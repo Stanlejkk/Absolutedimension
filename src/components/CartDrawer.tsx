@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useCart, type CartItem } from "../lib/CartContext";
 import { useLocale } from "../i18n";
 import { useFormatPrice } from "../lib/useCatalog";
+import SpringNumber from "./motion/SpringNumber";
 
 export default function CartDrawer() {
   const { isOpen, closeCart, items, subtotal, count } = useCart();
@@ -85,7 +86,11 @@ export default function CartDrawer() {
                 <footer className="border-t border-ink/10 px-6 py-5 space-y-4">
                   <div className="flex items-baseline justify-between">
                     <span className="text-sm tracking-wider2 uppercase">{t("cart.subtotal")}</span>
-                    <span className="text-lg">{formatPrice(subtotal)}</span>
+                    <SpringNumber
+                      value={subtotal}
+                      format={formatPrice}
+                      className="text-lg tabular-nums"
+                    />
                   </div>
                   <p className="text-xs text-muted">{t("cart.shippingNote")}</p>
                   <Link
@@ -169,9 +174,12 @@ function CartLine({ item }: { item: CartItem }) {
               {t("cart.sizeLabel")}: <span className="text-ink">{item.size}</span>
             </p>
           </div>
-          <span className="text-sm tabular-nums" aria-label={t("cart.lineTotalAria")}>
-            {formatPrice(lineTotal)}
-          </span>
+          <SpringNumber
+            value={lineTotal}
+            format={formatPrice}
+            className="text-sm tabular-nums"
+          />
+          <span className="sr-only">{t("cart.lineTotalAria")}</span>
         </div>
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="inline-flex items-center border border-ink/15 rounded-full">
@@ -185,7 +193,15 @@ function CartLine({ item }: { item: CartItem }) {
                 <path d="M5 12h14" strokeLinecap="round" />
               </svg>
             </button>
-            <span className="min-w-[2rem] text-center text-xs tabular-nums">{item.quantity}</span>
+            <motion.span
+              key={item.quantity}
+              initial={{ y: -6, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="min-w-[2rem] text-center text-xs tabular-nums"
+            >
+              {item.quantity}
+            </motion.span>
             <button
               type="button"
               onClick={() => setQuantity(item.key, item.quantity + 1)}
@@ -200,7 +216,7 @@ function CartLine({ item }: { item: CartItem }) {
           <button
             type="button"
             onClick={() => removeItem(item.key)}
-            className="text-xs tracking-wide text-muted hover:text-ink underline underline-offset-4"
+            className="link-rule text-xs tracking-wide text-muted hover:text-ink"
           >
             {t("cart.remove")}
           </button>

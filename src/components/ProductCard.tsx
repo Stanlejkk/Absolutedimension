@@ -1,9 +1,10 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useFormatPrice, type ResolvedProduct } from "../lib/useCatalog";
 import { useT } from "../i18n";
 import TiltCard from "./motion/TiltCard";
+import { useProductTransition } from "./motion/ProductTransition";
 
 type Props = {
   product: ResolvedProduct;
@@ -19,6 +20,18 @@ export default function ProductCard({ product, index = 0, dense = false }: Props
   const formatPrice = useFormatPrice();
   const t = useT();
   const reduced = useReducedMotion();
+  const { capture } = useProductTransition();
+  const imgWrapRef = useRef<HTMLDivElement>(null);
+
+  const handleLinkClick = () => {
+    const el = imgWrapRef.current;
+    if (!el || reduced) return;
+    capture({
+      productId: product.id,
+      image: product.image,
+      rect: el.getBoundingClientRect(),
+    });
+  };
 
   return (
     <motion.div
@@ -28,28 +41,34 @@ export default function ProductCard({ product, index = 0, dense = false }: Props
       transition={{ duration: 0.9, delay: Math.min(index, 6) * 0.06, ease: EASE }}
       className="group"
     >
-      <Link to={`/product/${product.id}`} className="block">
+      <Link
+        to={`/product/${product.id}`}
+        onClick={handleLinkClick}
+        className="block"
+      >
         <TiltCard
           max={4}
           className="relative aspect-[3/4] overflow-hidden bg-[#e8ddcb] will-change-transform"
         >
-          {!imgFailed ? (
-            <motion.img
-              src={product.image}
-              alt={product.name}
-              onError={() => setImgFailed(true)}
-              loading="lazy"
-              initial={reduced ? undefined : { scale: 1.08, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 1.4, ease: EASE }}
-              className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
-            />
-          ) : (
-            <div className="absolute inset-0 grid place-items-center text-muted/60 text-xs tracking-wider2 uppercase">
-              {product.name}
-            </div>
-          )}
+          <div ref={imgWrapRef} className="absolute inset-0">
+            {!imgFailed ? (
+              <motion.img
+                src={product.image}
+                alt={product.name}
+                onError={() => setImgFailed(true)}
+                loading="lazy"
+                initial={reduced ? undefined : { scale: 1.08, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 1.4, ease: EASE }}
+                className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+              />
+            ) : (
+              <div className="absolute inset-0 grid place-items-center text-muted/60 text-xs tracking-wider2 uppercase">
+                {product.name}
+              </div>
+            )}
+          </div>
 
           {/* Soft vignette that deepens on hover — adds weight to the tile */}
           <span

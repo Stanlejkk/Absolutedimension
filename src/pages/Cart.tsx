@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useCart } from "../lib/CartContext";
 import { useLocale } from "../i18n";
 import { useFormatPrice } from "../lib/useCatalog";
+import SpringNumber from "../components/motion/SpringNumber";
 
 export default function Cart() {
   const { items, subtotal, count, setQuantity, removeItem } = useCart();
@@ -72,9 +73,11 @@ export default function Cart() {
                         {t("cart.sizeLabel")}: <span className="text-ink">{item.size}</span>
                       </p>
                     </div>
-                    <span className="text-lg tabular-nums whitespace-nowrap">
-                      {formatPrice(item.price * item.quantity)}
-                    </span>
+                    <SpringNumber
+                      value={item.price * item.quantity}
+                      format={formatPrice}
+                      className="text-lg tabular-nums whitespace-nowrap"
+                    />
                   </div>
                   <div className="mt-auto pt-4 flex items-center justify-between gap-3">
                     <div className="inline-flex items-center border border-ink/15 rounded-full">
@@ -88,7 +91,15 @@ export default function Cart() {
                           <path d="M5 12h14" strokeLinecap="round" />
                         </svg>
                       </button>
-                      <span className="min-w-[2.5rem] text-center text-sm tabular-nums">{item.quantity}</span>
+                      <motion.span
+                        key={item.quantity}
+                        initial={{ y: -6, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="min-w-[2.5rem] text-center text-sm tabular-nums"
+                      >
+                        {item.quantity}
+                      </motion.span>
                       <button
                         type="button"
                         onClick={() => setQuantity(item.key, item.quantity + 1)}
@@ -118,7 +129,11 @@ export default function Cart() {
               <p className="eyebrow mb-4">{t("checkout.summary")}</p>
               <div className="flex items-baseline justify-between py-3 border-t border-ink/10">
                 <span className="text-sm tracking-wider2 uppercase">{t("cart.subtotal")}</span>
-                <span className="text-lg tabular-nums">{formatPrice(subtotal)}</span>
+                <SpringNumber
+                  value={subtotal}
+                  format={formatPrice}
+                  className="text-lg tabular-nums"
+                />
               </div>
               <p className="text-xs text-muted mt-2">{t("cart.shippingNote")}</p>
               <Link
