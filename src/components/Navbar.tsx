@@ -18,11 +18,12 @@ export default function Navbar() {
   const cartBtnRef = useRef<HTMLButtonElement>(null);
   const accountHref = user ? "/account" : "/login";
 
-  // Home page starts on a dark hero image, so the nav text should be bone
-  // at the top. Every other route lives on the light bone background —
-  // if we kept bone text there, it would be invisible. Morph the palette.
-  const hasDarkHeroAtTop = pathname === "/";
-  const darkNav = scrolled || !hasDarkHeroAtTop;
+  // The nav needs to read against whatever sits behind it. The home route
+  // is the only one with a dark hero image — every other route lives on
+  // the bone-light page body. So the palette is driven by the route, and
+  // only the translucent background tint depends on scroll.
+  const isHome = pathname === "/";
+  const darkNav = isHome;
 
   const links = useMemo(
     () => [
@@ -267,13 +268,17 @@ export default function Navbar() {
 }
 
 function Logo({ invert = false }: { invert?: boolean }) {
+  // No `transition` utility here on purpose — Tailwind's default transition
+  // includes `filter`, and crossfading between "no filter" and `invert(1)`
+  // produces a brief green/pink flash on first paint while the image
+  // decodes. A hard switch keeps the logo clean.
   return (
     <img
       src="https://www.absolutdimension.com/cdn/shop/files/logo_www_transparent.png?v=1760455149&width=400"
       alt="Absolut Dimension"
       width={400}
       height={69}
-      className={`h-6 md:h-7 w-auto transition ${invert ? "invert" : ""}`}
+      className={`h-6 md:h-7 w-auto ${invert ? "invert" : ""}`}
     />
   );
 }
