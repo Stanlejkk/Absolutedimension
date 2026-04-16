@@ -18,7 +18,48 @@ export const pl: EnDictionary = {
     searchAria: "Szukaj",
     menuAria: "Menu",
     shopAria: "Sklep",
+    bagAria: "Koszyk",
     switchLanguageAria: "Zmień język",
+  },
+
+  cart: {
+    title: "Twój koszyk",
+    empty: "Twój koszyk jest pusty.",
+    emptyBody: "Dodaj model z garderoby – każdy egzemplarz jest zachowany dla Ciebie, gdy tylko tu trafi.",
+    continueShopping: "Kontynuuj zakupy",
+    sizeLabel: "Rozmiar",
+    quantityLabel: "Ilość",
+    remove: "Usuń",
+    increase: "Zwiększ ilość",
+    decrease: "Zmniejsz ilość",
+    subtotal: "Suma częściowa",
+    shippingNote: "Dostawa i ewentualne opłaty liczone przy zamówieniu.",
+    checkout: "Do kasy",
+    viewBag: "Zobacz koszyk",
+    addedToast: "Dodano do koszyka",
+    closeAria: "Zamknij koszyk",
+    itemsCount: {
+      one: "{count} sztuka",
+      other: "{count} sztuk",
+    },
+    lineTotalAria: "Suma pozycji",
+  },
+
+  checkout: {
+    title: "Zamówienie",
+    summary: "Podsumowanie",
+    payWithStripe: "Zapłać przez Stripe",
+    preparing: "Przygotowujemy bezpieczną płatność…",
+    comingSoon: "Płatności Stripe są już przygotowywane",
+    comingSoonBody:
+      "Finalizujemy bezpieczną integrację płatności. W międzyczasie napisz na atelier@absolutdimension.com – złożymy Twoje zamówienie korespondencyjnie.",
+    errorTitle: "Nie udało się rozpocząć płatności",
+    errorBody: "Coś poszło nie tak po naszej stronie. Spróbuj ponownie za chwilę.",
+    backToBag: "Wróć do koszyka",
+    emptyTitle: "Twój koszyk jest pusty",
+    emptyBody: "Nie ma jeszcze nic do opłacenia. Dodaj najpierw model z garderoby.",
+    browseShop: "Przejdź do sklepu",
+    total: "Razem",
   },
 
   hero: {
