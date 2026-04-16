@@ -142,9 +142,13 @@ export default function Product() {
 
             {/* CTA */}
             <div className="mt-8 flex flex-col gap-3">
-              <button
+              <motion.button
                 onClick={handleAdd}
                 disabled={!selectedSize}
+                whileHover={selectedSize ? { scale: 1.01 } : undefined}
+                whileTap={selectedSize ? { scale: 0.985 } : undefined}
+                animate={added ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className={`group relative inline-flex items-center justify-center gap-3 rounded-full px-6 py-4 text-sm tracking-wider2 uppercase overflow-hidden transition-colors ${
                   !selectedSize
                     ? "bg-ink/20 text-ink/40 cursor-not-allowed"
@@ -161,7 +165,28 @@ export default function Product() {
                     <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
-              </button>
+                {added && (
+                  <motion.svg
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    viewBox="0 0 24 24"
+                    className="relative z-10 h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                  >
+                    <motion.path
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      d="M5 12l5 5L20 7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </motion.svg>
+                )}
+              </motion.button>
               <button className="inline-flex items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-sm tracking-wide hover:border-ink transition">
                 {t("product.saveForLater")}
               </button>

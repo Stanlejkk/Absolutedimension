@@ -1,9 +1,13 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useMemo } from "react";
 import { useLocale } from "../i18n";
+import SplitText from "./motion/SplitText";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function Marquee() {
   const { t } = useLocale();
+  const reduced = useReducedMotion();
   const phrases = useMemo(
     () => [
       t("marquee.phrase1"),
@@ -26,25 +30,23 @@ export default function Marquee() {
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.8, ease: EASE }}
           className="eyebrow text-bone/70 mb-6"
         >
           {t("marquee.eyebrow")}
         </motion.span>
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display italic text-5xl md:text-7xl lg:text-8xl font-light tracking-tight"
-        >
-          {t("marquee.headline")}
-        </motion.h2>
+        <SplitText
+          as="h2"
+          text={t("marquee.headline")}
+          by="word"
+          stagger={0.08}
+          className="block font-display italic text-5xl md:text-7xl lg:text-8xl font-light tracking-tight"
+        />
         <motion.span
           initial={{ opacity: 0, scaleX: 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1, delay: 0.3, ease: EASE }}
           className="mt-8 block h-px w-24 bg-gold origin-center"
         />
       </div>
@@ -52,7 +54,7 @@ export default function Marquee() {
       <motion.div
         aria-hidden
         className="mt-16 flex whitespace-nowrap gap-14 will-change-transform opacity-30"
-        animate={{ x: ["0%", "-50%"] }}
+        animate={reduced ? undefined : { x: ["0%", "-50%"] }}
         transition={{ duration: 50, ease: "linear", repeat: Infinity }}
       >
         {[...phrases, ...phrases, ...phrases, ...phrases].map((p, i) => (

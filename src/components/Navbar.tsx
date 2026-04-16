@@ -45,7 +45,11 @@ export default function Navbar() {
         scrolled ? "bg-ink/70 backdrop-blur-md border-b border-bone/10" : "bg-transparent"
       }`}
     >
-      <nav className="container-x flex h-16 md:h-20 items-center justify-between">
+      <motion.nav
+        animate={{ height: scrolled ? 60 : 80 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="container-x flex items-center justify-between"
+      >
         <Link to="/" className="flex items-center gap-2 text-bone">
           <Logo />
           <span className="sr-only">Absolut Dimension</span>
@@ -53,23 +57,35 @@ export default function Navbar() {
 
         <ul className="hidden md:flex items-center gap-8">
           {links.map((l) => (
-            <li key={l.to}>
+            <li key={l.to} className="relative">
               <NavLink
                 to={l.to}
                 className={({ isActive }) =>
-                  `group relative text-sm font-medium tracking-wide transition-colors ${
+                  `group relative inline-block text-sm font-medium tracking-wide transition-colors ${
                     isActive ? "text-bone" : "text-bone/90 hover:text-bone"
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
-                    {l.label}
-                    <span
-                      className={`absolute -bottom-1 left-0 h-px bg-bone transition-all duration-500 ${
-                        isActive ? "w-full" : "w-0 group-hover:w-full"
-                      }`}
-                    />
+                    <span className="relative inline-block overflow-hidden">
+                      <span className="inline-block transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-full">
+                        {l.label}
+                      </span>
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 inline-block translate-y-full text-gold transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0"
+                      >
+                        {l.label}
+                      </span>
+                    </span>
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-underline"
+                        className="absolute -bottom-1 left-0 right-0 h-px bg-bone"
+                        transition={{ type: "spring", stiffness: 320, damping: 32 }}
+                      />
+                    )}
                   </>
                 )}
               </NavLink>
@@ -117,14 +133,21 @@ export default function Navbar() {
             className="relative grid place-items-center h-9 w-9 rounded-full text-bone hover:bg-bone/10 transition"
           >
             <BagIcon />
-            {cartCount > 0 && (
-              <span
-                aria-hidden="true"
-                className="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-gold text-ink text-[10px] font-medium leading-none grid place-items-center tabular-nums"
-              >
-                {cartCount > 99 ? "99+" : cartCount}
-              </span>
-            )}
+            <AnimatePresence>
+              {cartCount > 0 && (
+                <motion.span
+                  key={cartCount}
+                  aria-hidden="true"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 520, damping: 22 }}
+                  className="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-gold text-ink text-[10px] font-medium leading-none grid place-items-center tabular-nums"
+                >
+                  {cartCount > 99 ? "99+" : cartCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
           <button
             aria-label={t("nav.menuAria")}
@@ -134,7 +157,7 @@ export default function Navbar() {
             <MenuIcon open={open} />
           </button>
         </div>
-      </nav>
+      </motion.nav>
 
       <AnimatePresence>
         {open && (
