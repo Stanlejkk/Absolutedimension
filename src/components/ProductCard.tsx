@@ -43,7 +43,6 @@ export default function ProductCard({ product, index = 0, dense = false }: Props
     >
       <Link
         to={`/product/${product.id}`}
-        data-cursor="View"
         onClick={handleLinkClick}
         className="block"
       >

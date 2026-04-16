@@ -145,7 +145,6 @@ function CollectionRow({
       <Link
         ref={rowRef}
         to={`/collections/${slug}`}
-        data-cursor="Explore"
         onMouseMove={onMove}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

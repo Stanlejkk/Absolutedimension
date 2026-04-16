@@ -6,7 +6,6 @@ import ScrollToTop from "./components/ScrollToTop";
 import CartDrawer from "./components/CartDrawer";
 import PageTransition from "./components/motion/PageTransition";
 import ScrollProgress from "./components/motion/ScrollProgress";
-import EditorialCursor from "./components/motion/EditorialCursor";
 import { ToastProvider } from "./components/motion/Toast";
 import { FlyToCartProvider } from "./components/motion/FlyToCart";
 import { ProductTransitionProvider } from "./components/motion/ProductTransition";
@@ -36,7 +35,6 @@ export default function App() {
           <div className="min-h-screen bg-bone text-ink">
             <ScrollToTop />
             <ScrollProgress />
-            <EditorialCursor />
             <Navbar />
             <main>
               <AnimatePresence mode="wait" initial={false}>

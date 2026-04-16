@@ -175,7 +175,6 @@ export default function Hero() {
                   <MagneticButton strength={0.3} className="inline-block">
                     <Link
                       to="/shop"
-                      data-cursor="Shop"
                       className="group relative inline-flex items-center gap-3 rounded-full bg-bone text-ink px-7 py-3 text-sm tracking-wide overflow-hidden"
                     >
                       <span className="relative z-10 transition-colors duration-500 group-hover:text-bone">
@@ -196,7 +195,6 @@ export default function Hero() {
                   <MagneticButton strength={0.25} className="inline-block">
                     <Link
                       to="/about"
-                      data-cursor="Story"
                       className="inline-flex items-center gap-2 rounded-full border border-bone/40 text-bone px-7 py-3 text-sm tracking-wide hover:bg-bone hover:text-ink transition"
                     >
                       {t("hero.ctaStory")}

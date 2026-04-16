@@ -73,7 +73,7 @@ export default function Navbar() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="container-x flex items-center justify-between"
       >
-        <Link to="/" className={`flex items-center gap-2 ${textClass}`} data-cursor="Home">
+        <Link to="/" className={`flex items-center gap-2 ${textClass}`}>
           <Logo invert={!darkNav} />
           <span className="sr-only">Absolut Dimension</span>
         </Link>
@@ -154,7 +154,6 @@ export default function Navbar() {
             type="button"
             onClick={openCart}
             aria-label={t("nav.bagAria")}
-            data-cursor="Bag"
             className={`relative grid place-items-center h-9 w-9 rounded-full ${textClass} ${hoverRing} transition`}
           >
             <BagIcon />

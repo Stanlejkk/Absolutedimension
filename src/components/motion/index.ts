@@ -4,7 +4,6 @@ export { default as MagneticButton } from "./MagneticButton";
 export { default as TiltCard } from "./TiltCard";
 export { default as ScrollProgress } from "./ScrollProgress";
 export { default as PageTransition } from "./PageTransition";
-export { default as EditorialCursor } from "./EditorialCursor";
 export { default as Grain } from "./Grain";
 export { default as SpringNumber } from "./SpringNumber";
 export { ToastProvider, useToast } from "./Toast";

@@ -261,7 +261,6 @@ export default function Product() {
               <motion.button
                 onClick={handleAdd}
                 disabled={!selectedSize}
-                data-cursor={selectedSize ? "Add" : undefined}
                 whileHover={selectedSize ? { scale: 1.01 } : undefined}
                 whileTap={selectedSize ? { scale: 0.985 } : undefined}
                 animate={added ? { scale: [1, 1.04, 1] } : { scale: 1 }}

@@ -132,22 +132,6 @@
   }
 }
 
-/* -------------------------------------------------------------------------
-   Editorial cursor — hide the OS cursor when the custom one is mounted.
-   The class is toggled by <EditorialCursor/> only when the pointer is
-   fine and reduced-motion is off, so touch users keep their native cursor.
-   ------------------------------------------------------------------------- */
-html.editorial-cursor,
-html.editorial-cursor body,
-html.editorial-cursor a,
-html.editorial-cursor button,
-html.editorial-cursor [data-cursor],
-html.editorial-cursor input,
-html.editorial-cursor textarea,
-html.editorial-cursor select,
-html.editorial-cursor label {
-  cursor: none;
-}
 
 /* -------------------------------------------------------------------------
    Accessibility: honour users who've opted out of motion.
