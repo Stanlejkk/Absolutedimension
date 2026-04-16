@@ -126,31 +126,13 @@ export default function Navbar() {
 
 function Logo() {
   return (
-    <svg viewBox="0 0 220 40" className="h-6 md:h-7 w-auto" fill="none">
-      <text
-        x="0"
-        y="28"
-        fontFamily="Cormorant Garamond, serif"
-        fontSize="26"
-        fontWeight="600"
-        letterSpacing="4"
-        fill="currentColor"
-      >
-        ABSOLUT
-      </text>
-      <text
-        x="124"
-        y="28"
-        fontFamily="Cormorant Garamond, serif"
-        fontSize="26"
-        fontWeight="400"
-        fontStyle="italic"
-        letterSpacing="2"
-        fill="currentColor"
-      >
-        dimension
-      </text>
-    </svg>
+    <img
+      src="https://www.absolutdimension.com/cdn/shop/files/logo_www_transparent.png?v=1760455149&width=400"
+      alt="Absolut Dimension"
+      width={400}
+      height={69}
+      className="h-6 md:h-7 w-auto"
+    />
   );
 }
 

@@ -37,9 +37,13 @@ export default function Footer() {
           className="grid md:grid-cols-12 gap-10 pb-16 border-b border-bone/10"
         >
           <div className="md:col-span-5">
-            <p className="font-display italic text-gold text-sm tracking-wider2 mb-4">
-              Absolut Dimension
-            </p>
+            <img
+              src="https://www.absolutdimension.com/cdn/shop/files/logo_www_transparent.png?v=1760455149&width=400"
+              alt="Absolut Dimension"
+              width={400}
+              height={69}
+              className="h-6 w-auto mb-4 brightness-0 invert"
+            />
             <h3 className="font-display text-4xl md:text-5xl font-light leading-[1.1]">
               A wardrobe, <br />
               designed <span className="italic">to endure.</span>
