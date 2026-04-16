@@ -2,38 +2,41 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  formatPrice,
-  getProduct,
-  getCollection,
-  products,
-} from "../lib/data";
+  useProduct,
+  useCollection,
+  useProductsByCollection,
+  useFormatPrice,
+} from "../lib/useCatalog";
 import ProductCard from "../components/ProductCard";
+import { useLocale } from "../i18n";
 
 export default function Product() {
   const { id } = useParams<{ id: string }>();
-  const product = id ? getProduct(id) : undefined;
+  const product = useProduct(id);
+  const { t } = useLocale();
+  const formatPrice = useFormatPrice();
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [added, setAdded] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
+
+  const collection = useCollection(product?.collection);
+  const collectionProducts = useProductsByCollection(product?.collection);
 
   if (!product) {
     return (
       <section className="pt-40 pb-24">
         <div className="container-x text-center">
-          <p className="eyebrow mb-4">404</p>
-          <h1 className="font-display text-5xl font-light mb-6">Piece not found.</h1>
+          <p className="eyebrow mb-4">{t("notFound.code")}</p>
+          <h1 className="font-display text-5xl font-light mb-6">{t("product.notFoundTitle")}</h1>
           <Link to="/shop" className="underline underline-offset-4">
-            Back to the shop
+            {t("product.backToShop")}
           </Link>
         </div>
       </section>
     );
   }
 
-  const collection = getCollection(product.collection);
-  const related = products
-    .filter((p) => p.collection === product.collection && p.id !== product.id)
-    .slice(0, 4);
+  const related = collectionProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
   const handleAdd = () => {
     if (!selectedSize) return;
@@ -46,9 +49,9 @@ export default function Product() {
       <div className="container-x">
         {/* Breadcrumbs */}
         <nav className="flex flex-wrap gap-2 text-xs tracking-wide text-muted mb-8">
-          <Link to="/" className="hover:text-ink">Home</Link>
+          <Link to="/" className="hover:text-ink">{t("product.breadcrumbHome")}</Link>
           <span>/</span>
-          <Link to="/shop" className="hover:text-ink">Shop</Link>
+          <Link to="/shop" className="hover:text-ink">{t("nav.shop")}</Link>
           <span>/</span>
           {collection && (
             <>
@@ -84,7 +87,7 @@ export default function Product() {
               )}
               {product.newArrival && (
                 <span className="absolute top-4 left-4 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
-                  New
+                  {t("shop.badges.new")}
                 </span>
               )}
             </div>
@@ -99,7 +102,7 @@ export default function Product() {
           >
             {collection && (
               <Link to={`/collections/${collection.slug}`} className="eyebrow text-muted hover:text-ink mb-3">
-                {collection.name} collection
+                {collection.name} {t("product.collectionSuffix")}
               </Link>
             )}
             <h1 className="font-display text-4xl md:text-5xl font-light leading-[1.05]">
@@ -110,7 +113,7 @@ export default function Product() {
 
             {/* Sizes */}
             <div className="mt-10">
-              <p className="eyebrow mb-3">Size</p>
+              <p className="eyebrow mb-3">{t("product.size")}</p>
               <div className="flex flex-wrap gap-2">
                 {product.sizes.map((size) => (
                   <button
@@ -142,7 +145,7 @@ export default function Product() {
                 }`}
               >
                 <span className="relative z-10">
-                  {!selectedSize ? "Select a size" : added ? "Added to bag ✓" : "Add to bag"}
+                  {!selectedSize ? t("product.selectSize") : added ? t("product.added") : t("product.addToBag")}
                 </span>
                 {selectedSize && !added && (
                   <svg viewBox="0 0 24 24" className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -151,22 +154,21 @@ export default function Product() {
                 )}
               </button>
               <button className="inline-flex items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-sm tracking-wide hover:border-ink transition">
-                Save for later
+                {t("product.saveForLater")}
               </button>
             </div>
 
             {/* Accordion details */}
             <div className="mt-12 divide-y divide-ink/10 border-y border-ink/10">
-              <Section title="Details">{product.description}</Section>
-              <Section title="Materials &amp; craft">
-                Fabric sourced in Italy and France. Cut and finished by hand in our Warsaw atelier.
-                Reinforced seams, bound edges, and solid brass hardware.
+              <Section title={t("product.details")}>{product.description}</Section>
+              <Section title={t("product.materials")}>
+                {t("product.materialsBody")}
               </Section>
-              <Section title="Shipping">
-                Complimentary shipping on orders above 500&nbsp;zł. Dispatched within 3–5 working days.
+              <Section title={t("product.shippingTitle")}>
+                {t("product.shippingBody")}
               </Section>
-              <Section title="Returns">
-                14 days to return, unused and with original tags. Bespoke and final-sale pieces excluded.
+              <Section title={t("product.returnsTitle")}>
+                {t("product.returnsBody")}
               </Section>
             </div>
           </motion.div>
@@ -177,14 +179,15 @@ export default function Product() {
           <section className="mt-24 md:mt-32">
             <div className="flex items-end justify-between mb-10 gap-6">
               <h2 className="font-display text-3xl md:text-5xl font-light">
-                From the same <span className="italic">collection</span>
+                {t("product.fromSameCollection")}{" "}
+                <span className="italic">{t("product.fromSameCollectionItalic")}</span>
               </h2>
               {collection && (
                 <Link
                   to={`/collections/${collection.slug}`}
                   className="hidden sm:inline-flex items-center gap-2 text-sm text-muted hover:text-ink group"
                 >
-                  View {collection.name}
+                  {t("product.viewCollection", { collection: collection.name })}
                   <span className="block h-px w-10 bg-ink/30 group-hover:w-16 transition-all" />
                 </Link>
               )}
@@ -210,7 +213,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         className="w-full flex items-center justify-between py-4 text-sm tracking-wider2 uppercase"
         aria-expanded={open}
       >
-        <span dangerouslySetInnerHTML={{ __html: title }} />
+        <span>{title}</span>
         <motion.span
           animate={{ rotate: open ? 45 : 0 }}
           transition={{ duration: 0.3 }}

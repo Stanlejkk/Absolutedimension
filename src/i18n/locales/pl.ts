@@ -1,0 +1,366 @@
+/**
+ * Polski słownik UI. Zachowujemy identyczną strukturę kluczy co en.ts —
+ * sprawdza to walidator typu w ./index.ts (pl musi spełniać EnDictionary).
+ *
+ * Tłumaczenia są dopracowane pod editorialny, elegancki ton marki.
+ * Używamy polskich cudzysłowów „ ", półpauz (–) zamiast myślników,
+ * i nie nadużywamy kropek w eyebrow-ach.
+ */
+
+import type { EnDictionary } from "./en";
+
+export const pl: EnDictionary = {
+  nav: {
+    shop: "Sklep",
+    collections: "Kolekcje",
+    atelier: "Atelier",
+    editorial: "Editorial",
+    searchAria: "Szukaj",
+    menuAria: "Menu",
+    shopAria: "Sklep",
+    switchLanguageAria: "Zmień język",
+  },
+
+  hero: {
+    eyebrow: "Jesień / Zima 2025",
+    title: "Absolut Dimension",
+    subtitle: "Przemyślane krawiectwo, stworzone do codziennego noszenia.",
+    ctaShop: "Odkryj",
+    ctaStory: "Nasze atelier",
+    scroll: "Scroll",
+    goToSlide: "Przejdź do slajdu {n}",
+  },
+
+  marquee: {
+    tagline: "Szyte w Polsce – z uwagą, bez hałasu, bez kompromisów.",
+    separator: "·",
+    eyebrow: "Absolute Dimension",
+    headline: "Harmonia luksusu",
+    phrase1: "Harmonia luksusu",
+    phrase2: "Inteligentna garderoba",
+    phrase3: "Ponadczasowe sylwetki",
+    phrase4: "Szyte w Polsce",
+    phrase5: "Szlachetna estetyka",
+    phrase6: "Zaprojektowane na lata",
+  },
+
+  sections: {
+    featuredEyebrow: "Wybrane modele",
+    featuredTitle: "Z pracowni",
+    featuredLink: "Zobacz całą kolekcję",
+
+    collectionsEyebrow: "Kolekcje",
+    collectionsTitle: "Osiem miast, osiem nastrojów",
+    collectionsLink: "Wszystkie kolekcje",
+    collectionsHeadline1: "Kolekcje",
+    collectionsHeadline2: "bez sezonu.",
+    collectionsBody:
+      "Nie ulegamy trendom. Nasze ubrania projektujemy jako długich towarzyszy – skrojone raz, przemyślane dwa razy, wykonane z materiałów, które z czasem miękną.",
+    collectionsExploreAll: "Zobacz wszystkie kolekcje",
+
+    newArrivalsEyebrow: "Nowości",
+    newArrivalsTitle: "Świeżo z atelier",
+
+    storyEyebrow: "Nasze atelier",
+    storyTitle: "Krój, drapowanie, wykończenie – w tej kolejności",
+    storyHeadline1: "Uporządkowany",
+    storyHeadlineItalic: "sposób",
+    storyHeadline2: "ubierania się.",
+    storyBody:
+      "Każda rzecz zaczyna się na stole. Tniemy naturalne tkaniny według ręcznych wykrojów, drapujemy je aż sylwetka ułoży się naturalnie, a wykończenie powstaje ręcznie w naszym warszawskim atelier. Bez skrótów, bez cichych kompromisów – tylko ubrania, które z czasem nabierają charakteru.",
+    storyLead:
+      "Absolut Dimension to studium powściągliwości – dom krawiecki oparty na idei, że garderobę buduje się jak bibliotekę: każdy egzemplarz wybierany z rozmysłem i zachowywany dla siebie samego.",
+    storyPara2:
+      "Współpracujemy z niewielkimi polskimi pracowniami, by krajać sylwetki szanujące ludzką formę. Tkaniny pochodzą z Włoch i Francji; wykończenie wykonujemy ręcznie. Niczego w naszym domu nie robi się w pośpiechu.",
+    storyStat1Value: "14",
+    storyStat1Label: "Lat atelier",
+    storyStat2Value: "100%",
+    storyStat2Label: "Szyte w Polsce",
+    storyStat3Value: "07",
+    storyStat3Label: "Edycji wydanych",
+    storyStat4Value: "48h",
+    storyStat4Label: "Wykończenia ręcznego",
+    storyLink: "Zajrzyj do atelier",
+
+    editorialEyebrow: "Dziennik",
+    editorialTitle: "Listy z pracowni",
+    editorialLink: "Wszystkie listy",
+    editorialHeadline1: "Słowa &",
+    editorialHeadline2: "obrazy.",
+    editorialAllEntries: "Wszystkie wpisy",
+    editorialReadAction: "Czytaj",
+    editorialTagEditorial: "Editorial",
+    editorialTagLookbook: "Lookbook",
+    editorialTagHouse: "Atelier",
+    editorialTagStyling: "Stylizacja",
+  },
+
+  newsletter: {
+    eyebrow: "List",
+    titleLine1: "Korespondencja,",
+    titleLine2: "cicho dostarczana.",
+    body:
+      "Cztery listy w roku. Nowe edycje, wcześniejszy dostęp i sporadyczne notatki z atelier. Bez szumu.",
+    placeholder: "twoj@adres.pl",
+    submit: "Zapisz się",
+    success: "Merci. Pierwszy list wkrótce u Ciebie.",
+    error: "Coś poszło nie tak. Spróbuj ponownie.",
+    privacy: "Zapisując się, akceptujesz naszą politykę prywatności.",
+  },
+
+  footer: {
+    tagline: "Przemyślane krawiectwo z Warszawy.",
+    headline1: "Garderoba,",
+    headline2: "zaprojektowana",
+    headlineItalic: "na lata.",
+    colShop: "Sklep",
+    colHouse: "Dom",
+    colCare: "Pielęgnacja",
+    links: {
+      shopAll: "Wszystkie modele",
+      newArrivals: "Nowości",
+      collections: "Kolekcje",
+      ourStory: "Nasza historia",
+      journal: "Editorial",
+      atelier: "Atelier",
+      sustainability: "Zrównoważony rozwój",
+      madeInPoland: "Szyte w Polsce",
+      press: "Prasa",
+      contact: "Kontakt",
+      shipping: "Dostawa",
+      returns: "Zwroty",
+      sizeGuide: "Tabela rozmiarów",
+      care: "Pielęgnacja ubrań",
+    },
+    social: "Obserwuj",
+    rights: "Wszelkie prawa zastrzeżone.",
+    company: "Absolut Dimension Sp. z o.o.",
+    legal: {
+      privacy: "Prywatność",
+      terms: "Regulamin",
+      cookies: "Cookies",
+    },
+  },
+
+  shop: {
+    eyebrow: "Kolekcja",
+    title: "Sklep",
+    subtitle: "Wszystkie modele. Uszeregowane według daty wejścia.",
+    filters: {
+      all: "Wszystkie",
+      new: "Nowe",
+      featured: "Polecane",
+      collection: "Kolekcja",
+      category: "Kategoria",
+      sort: "Sortuj",
+      sortOptions: {
+        newest: "Najnowsze",
+        priceAsc: "Cena – od najniższej",
+        priceDesc: "Cena – od najwyższej",
+      },
+      clear: "Wyczyść filtry",
+    },
+    empty: "Żaden model nie pasuje jeszcze do tych filtrów.",
+    count: {
+      one: "{count} model",
+      other: "{count} modeli",
+    },
+    badges: {
+      new: "Nowość",
+      featured: "Polecane",
+    },
+  },
+
+  product: {
+    backToShop: "Powrót do sklepu",
+    details: "Szczegóły",
+    description: "Opis",
+    size: "Rozmiar",
+    selectSize: "Wybierz rozmiar",
+    addToBag: "Dodaj do koszyka",
+    adding: "Dodaję…",
+    added: "Dodano do koszyka ✓",
+    notify: "Powiadom mnie, gdy wróci",
+    soldOut: "Wyprzedane",
+    care: "Pielęgnacja",
+    shippingReturns: "Dostawa i zwroty",
+    sharedCollection: "Z kolekcji {collection}",
+    recommended: "Może Ci się spodobać",
+    materials: "Materiały i rzemiosło",
+    madeIn: "Szyte w Polsce",
+    priceFrom: "od",
+    outOfStock: "Aktualnie niedostępne",
+    saveForLater: "Zapisz na później",
+    materialsBody:
+      "Tkaniny z Włoch i Francji. Krój i wykończenie ręczne w naszym warszawskim atelier. Wzmocnione szwy, obszywane brzegi i mosiężne okucia.",
+    shippingTitle: "Dostawa",
+    shippingBody:
+      "Darmowa dostawa przy zamówieniach powyżej 500 zł. Wysyłka w ciągu 3–5 dni roboczych.",
+    returnsTitle: "Zwroty",
+    returnsBody:
+      "14 dni na zwrot – nienoszone i z oryginalnymi metkami. Modele szyte na miarę i z wyprzedaży są wyłączone.",
+    notFoundTitle: "Nie znaleziono modelu.",
+    collectionSuffix: "kolekcja",
+    fromSameCollection: "Z tej samej",
+    fromSameCollectionItalic: "kolekcji",
+    viewCollection: "Zobacz {collection}",
+    breadcrumbHome: "Strona główna",
+  },
+
+  collections: {
+    eyebrow: "Kolekcje",
+    title: "Osiem miast, osiem nastrojów",
+    subtitle: "Każda kolekcja to rozdział – miasto, sezon, sposób ubierania się.",
+    pieceCount: {
+      one: "{count} model",
+      few: "{count} modele",
+      many: "{count} modeli",
+      other: "{count} modeli",
+    },
+    view: "Zobacz kolekcję",
+    emptyState: "Ten rozdział wciąż powstaje.",
+    indexEyebrow: "Kierunki",
+    indexHeadline1: "Osiem miast,",
+    indexHeadlineItalic: "jedna garderoba.",
+    indexBody:
+      "Każda kolekcja zaczyna się od miejsca – jego kolorów, rytmu, cichych godzin. Efektem są ubrania, które podróżują i do których się wraca.",
+    indexNumberSuffix: "Kolekcja",
+    piecesArrow: "modeli →",
+  },
+
+  collection: {
+    back: "Wszystkie kolekcje",
+    pieces: "Modele",
+    explore: "Odkryj",
+    notFoundTitle: "Nie znaleziono kolekcji.",
+    singular: "Kolekcja",
+    emptyState: "Ta kolekcja jeszcze powstaje. Zajrzyj wkrótce.",
+    continueHeadline: "Eksploruj",
+    continueItalic: "dalej.",
+  },
+
+  blog: {
+    eyebrow: "Dziennik",
+    title: "Listy z pracowni",
+    subtitle:
+      "Cztery listy w roku. Editoriale z atelier, notatki o naszych kolekcjach i sporadyczna korespondencja z ludźmi, których ubieramy.",
+    readMore: "Przeczytaj list",
+    readingTime: "{minutes} min czytania",
+    byAuthor: "autor: {author}",
+    empty: "W dzienniku na razie cisza.",
+    backToJournal: "Powrót do dziennika",
+    shareHeading: "Udostępnij",
+    nextLetter: "Następny list",
+    prevLetter: "Poprzedni list",
+    notFoundTitle: "Nie znaleziono listu.",
+    moreLettersHeadline: "Więcej",
+    moreLettersItalic: "listów.",
+  },
+
+  about: {
+    eyebrow: "Atelier",
+    title: "Krój, drapowanie, wykończenie.",
+    lede:
+      "Absolut Dimension to warszawski dom krawiecki. Projektujemy i szyjemy ubrania dla życia przeżywanego z intencją – na placu, w restauracji, w samochodzie, w samolocie.",
+    storyHeading: "Nasza historia",
+    storyBody:
+      "Zaczęliśmy od prostego przekonania: garderoba powinna być długą rozmową, a nie serią impulsów. Każdy model rysowany jest odręcznie, cięty z tkanin z tkalni, które znamy z nazwy, i wykańczany ręcznymi ściegami przy rąbku, kołnierzu i podszewce.",
+    valuesHeading: "Jak pracujemy",
+    values: {
+      cloth: {
+        title: "Najpierw tkanina",
+        body: "Wybieramy tkalnię zanim wybierzemy sylwetkę. Wełna z Bielli, jedwab z Como, len z północy.",
+      },
+      hand: {
+        title: "Wykończenie ręczne",
+        body: "Rąbki, kołnierze, dziurki – każda rzecz nosi ślad ręki, która ją skończyła.",
+      },
+      slow: {
+        title: "Krótkie serie",
+        body: "Nic nie powstaje w dużych nakładach. Jeśli model się wyprzeda, często wraca cicho w kolejnym sezonie.",
+      },
+    },
+    visitHeading: "Odwiedź atelier",
+    visitBody:
+      "Po umówieniu wizyty, od wtorku do soboty. Mokotów, Warszawa. Napisz na atelier@absolutdimension.com.",
+    heroEyebrow: "Dom",
+    heroTitle1: "O",
+    heroTitleItalic: "nas.",
+    heroSubtitle:
+      "Polski dom przemyślanych ubrań – skomponowany jak biblioteka, skrojony jak architektura, noszony jak druga skóra.",
+    philosophyEyebrow: "Filozofia",
+    philosophyTitle1: "Uporządkowany",
+    philosophyTitleItalic: "sposób",
+    philosophyTitle2: "ubierania się.",
+    philosophyBody1:
+      "Absolut Dimension to polski dom luksusowej odzieży, tworzący unikatowe ubrania inspirowane najpiękniejszymi metropoliami świata. Od Monako po Bali – każda kolekcja opowiada historię miejsca, które ją zainspirowało.",
+    philosophyBody2:
+      "Nasze modele powstają w polskim atelier z najlepszych materiałów – jedwabiu, kaszmiru, wełny merino i bawełny organicznej. Każdy element wykończony jest ręcznie, z dbałością o najmniejszy szczegół. Wierzymy, że moda to forma wypowiedzi artystycznej – dlatego każda z naszych kolekcji łączy tradycję krawiecką z nowoczesnym designem, tworząc ubrania ponadczasowe i niepowtarzalne.",
+    stats: {
+      uniquePieces: { value: "108+", label: "Unikatowych modeli" },
+      collections: { value: "8", label: "Kolekcji" },
+      yearsOfAtelier: { value: "14", label: "Lat atelier" },
+      madeInPoland: { value: "100%", label: "Szyte w Polsce" },
+    },
+    pillarsEyebrow: "Co zachowujemy",
+    pillarsTitle1: "Cztery rzeczy, których się",
+    pillarsTitleItalic: "trzymamy.",
+    pillars: {
+      restraint: {
+        title: "Powściągliwość",
+        body: "Kroimy raz, myślimy dwa razy. Mniej modeli, wybranych z intencją – garderoba jak biblioteka.",
+      },
+      craft: {
+        title: "Rzemiosło",
+        body: "Każdy szew wykańczany ręcznie w naszym warszawskim atelier. Wzmocnione brzegi, mosiężne okucia i cierpliwość, której maszyny nie są w stanie powtórzyć.",
+      },
+      provenance: {
+        title: "Pochodzenie",
+        body: "Jedwabie z Como, bawełna z Apulii, wełna z Bielli. Tkaniny pochodzą z Włoch i Francji i pokonują krótką drogę, zanim trafią do naszych rąk.",
+      },
+      endurance: {
+        title: "Trwałość",
+        body: "Projektujemy na dekadę, nie na sezon. Nasze modele mają z czasem miękczeć – i zostawać.",
+      },
+    },
+    atelierEyebrow: "Atelier",
+    atelierTitle1: "Warszawa,",
+    atelierTitle2: "ulica Okopowa.",
+    atelierBody:
+      "Niewielka pracownia przy cichej ulicy, gdzie każdy model jest krojony, składany i wykańczany ręcznie. Nasz sześcioosobowy zespół pracuje razem od ponad dekady.",
+    discoverCollections: "Odkryj kolekcje",
+    shopTheWardrobe: "Do sklepu",
+  },
+
+  notFound: {
+    code: "404",
+    title: "Ta strona wymknęła się z wykroju.",
+    body: "Strona, której szukasz, już nie istnieje lub być może nigdy nie istniała. Zaprowadzimy Cię z powrotem.",
+    cta: "Wróć na stronę główną",
+    shop: "Sklep",
+    eyebrow: "404 — Poza ścieżką",
+    headline1: "Ta strona jest",
+    headlineItalic: "poza sezonem.",
+    longBody:
+      "Adres, który wpisałeś, nie pasuje do żadnego modelu w naszym archiwum. Zaprowadzimy Cię z powrotem do garderoby.",
+    ctaHome: "Powrót na stronę główną",
+    ctaShop: "Zajrzyj do sklepu",
+  },
+
+  price: {
+    currency: "PLN",
+    localeCode: "pl-PL",
+  },
+
+  common: {
+    loading: "Ładowanie…",
+    close: "Zamknij",
+    open: "Otwórz",
+    readMore: "Czytaj dalej",
+    back: "Wstecz",
+    view: "Zobacz",
+    viewAll: "Zobacz wszystko",
+    required: "wymagane",
+    optional: "opcjonalne",
+  },
+};

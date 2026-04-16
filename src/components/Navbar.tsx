@@ -1,18 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-
-const links = [
-  { label: "Shop", to: "/shop" },
-  { label: "Collections", to: "/collections" },
-  { label: "Atelier", to: "/about" },
-  { label: "Editorial", to: "/blog" },
-];
+import { useLocale } from "../i18n";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const { t, locale, toggle } = useLocale();
+
+  const links = useMemo(
+    () => [
+      { label: t("nav.shop"), to: "/shop" },
+      { label: t("nav.collections"), to: "/collections" },
+      { label: t("nav.atelier"), to: "/about" },
+      { label: t("nav.editorial"), to: "/blog" },
+    ],
+    [t],
+  );
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -68,24 +73,33 @@ export default function Navbar() {
         </ul>
 
         <div className="flex items-center gap-4 text-bone">
-          <button className="hidden md:block text-xs font-medium uppercase tracking-wider2 text-bone/90 hover:text-bone">
-            EN / PL
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={t("nav.switchLanguageAria")}
+            aria-pressed={locale === "en"}
+            title={t("nav.switchLanguageAria")}
+            className="hidden md:block text-xs font-medium uppercase tracking-wider2 text-bone/90 hover:text-bone transition-colors"
+          >
+            <span className={locale === "pl" ? "text-bone" : "text-bone/60"}>PL</span>
+            <span className="mx-1 text-bone/40">/</span>
+            <span className={locale === "en" ? "text-bone" : "text-bone/60"}>EN</span>
           </button>
           <button
-            aria-label="Search"
+            aria-label={t("nav.searchAria")}
             className="hidden md:grid place-items-center h-9 w-9 rounded-full text-bone hover:bg-bone/10 transition"
           >
             <SearchIcon />
           </button>
           <Link
             to="/shop"
-            aria-label="Shop"
+            aria-label={t("nav.shopAria")}
             className="relative grid place-items-center h-9 w-9 rounded-full text-bone hover:bg-bone/10 transition"
           >
             <BagIcon />
           </Link>
           <button
-            aria-label="Menu"
+            aria-label={t("nav.menuAria")}
             onClick={() => setOpen((v) => !v)}
             className="md:hidden grid place-items-center h-9 w-9 rounded-full text-bone hover:bg-bone/10 transition"
           >
@@ -111,11 +125,28 @@ export default function Navbar() {
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.05 * i, duration: 0.4 }}
                 >
-                  <Link to={l.to} className="block font-display text-3xl">
+                  <Link to={l.to} className="block font-display text-3xl text-ink">
                     {l.label}
                   </Link>
                 </motion.li>
               ))}
+              <motion.li
+                initial={{ y: 8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.05 * links.length, duration: 0.4 }}
+                className="pt-4 border-t border-ink/10"
+              >
+                <button
+                  type="button"
+                  onClick={toggle}
+                  aria-label={t("nav.switchLanguageAria")}
+                  className="text-xs font-medium uppercase tracking-wider2 text-ink/70 hover:text-ink transition-colors"
+                >
+                  <span className={locale === "pl" ? "text-ink" : "text-ink/50"}>PL</span>
+                  <span className="mx-1 text-ink/30">/</span>
+                  <span className={locale === "en" ? "text-ink" : "text-ink/50"}>EN</span>
+                </button>
+              </motion.li>
             </ul>
           </motion.div>
         )}

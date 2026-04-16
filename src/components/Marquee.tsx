@@ -1,18 +1,24 @@
 import { motion } from "framer-motion";
-
-const phrases = [
-  "Harmony of Luxury",
-  "SM.ART Wardrobe",
-  "Timeless silhouettes",
-  "Made in Poland",
-  "Sublime aesthetics",
-  "Designed to endure",
-];
+import { useMemo } from "react";
+import { useLocale } from "../i18n";
 
 export default function Marquee() {
+  const { t } = useLocale();
+  const phrases = useMemo(
+    () => [
+      t("marquee.phrase1"),
+      t("marquee.phrase2"),
+      t("marquee.phrase3"),
+      t("marquee.phrase4"),
+      t("marquee.phrase5"),
+      t("marquee.phrase6"),
+    ],
+    [t],
+  );
+
   return (
     <section
-      aria-label="Harmony of Luxury"
+      aria-label={t("marquee.headline")}
       className="relative overflow-hidden bg-bordeaux text-bone py-20 md:py-28"
     >
       <div className="container-x relative z-10 flex flex-col items-center text-center">
@@ -23,7 +29,7 @@ export default function Marquee() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="eyebrow text-bone/70 mb-6"
         >
-          Absolute Dimension
+          {t("marquee.eyebrow")}
         </motion.span>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -32,7 +38,7 @@ export default function Marquee() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="font-display italic text-5xl md:text-7xl lg:text-8xl font-light tracking-tight"
         >
-          Harmony of Luxury
+          {t("marquee.headline")}
         </motion.h2>
         <motion.span
           initial={{ opacity: 0, scaleX: 0 }}

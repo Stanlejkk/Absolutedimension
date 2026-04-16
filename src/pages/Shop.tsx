@@ -1,13 +1,14 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import { categoryLabels, type ProductCategory } from "../lib/data";
 import {
-  products,
-  collections,
-  categoryLabels,
-  type ProductCategory,
-} from "../lib/data";
+  useProducts,
+  useCollections,
+  useCategoryLabels,
+} from "../lib/useCatalog";
 import ProductCard from "../components/ProductCard";
+import { useLocale } from "../i18n";
 
 type SortMode = "default" | "price-asc" | "price-desc" | "name";
 
@@ -15,6 +16,10 @@ const CATEGORY_KEYS = Object.keys(categoryLabels) as ProductCategory[];
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t, plural } = useLocale();
+  const products = useProducts();
+  const collections = useCollections();
+  const resolvedCategoryLabels = useCategoryLabels();
 
   const [category, setCategory] = useState<string>(searchParams.get("cat") ?? "all");
   const [collection, setCollection] = useState<string>(searchParams.get("col") ?? "all");
@@ -41,7 +46,12 @@ export default function Shop() {
     else if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
     else if (sort === "name") list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [category, collection, sort, onlyNew]);
+  }, [products, category, collection, sort, onlyNew]);
+
+  const countLabel = t(
+    `shop.count.${plural(filtered.length)}` as "shop.count.other",
+    { count: filtered.length },
+  );
 
   return (
     <section className="pt-32 md:pt-40 pb-24 md:pb-36">
@@ -53,55 +63,57 @@ export default function Shop() {
           className="max-w-3xl"
         >
           <p className="eyebrow mb-4">
-            {onlyNew ? "New arrivals" : "The wardrobe"}
+            {onlyNew ? t("sections.newArrivalsEyebrow") : t("shop.eyebrow")}
           </p>
           <h1 className="font-display text-5xl md:text-7xl font-light leading-[1]">
             {onlyNew ? (
               <>
-                Just <span className="italic">arrived.</span>
+                {t("sections.newArrivalsTitle")}
               </>
             ) : (
               <>
-                All <span className="italic">pieces.</span>
+                {t("shop.title")} <span className="italic">{t("shop.subtitle")}</span>
               </>
             )}
           </h1>
           <p className="mt-6 text-muted max-w-xl">
-            {filtered.length} pieces, cut once and considered twice. Sort, filter,
-            and linger — nothing in our house is in a hurry.
+            {countLabel}
           </p>
         </motion.div>
 
         {/* Filter bar */}
         <div className="mt-14 flex flex-wrap items-center gap-3 pb-6 border-b border-ink/10">
           <Select
-            label="Category"
+            label={t("shop.filters.category")}
             value={category}
             onChange={setCategory}
-            options={[{ value: "all", label: "All" }, ...CATEGORY_KEYS.map((k) => ({ value: k, label: categoryLabels[k] }))]}
+            options={[
+              { value: "all", label: t("shop.filters.all") },
+              ...CATEGORY_KEYS.map((k) => ({ value: k, label: resolvedCategoryLabels[k] })),
+            ]}
           />
           <Select
-            label="Collection"
+            label={t("shop.filters.collection")}
             value={collection}
             onChange={setCollection}
             options={[
-              { value: "all", label: "All collections" },
+              { value: "all", label: t("shop.filters.all") },
               ...collections.map((c) => ({ value: c.slug, label: c.name })),
             ]}
           />
           <Select
-            label="Sort"
+            label={t("shop.filters.sort")}
             value={sort}
             onChange={(v) => setSort(v as SortMode)}
             options={[
-              { value: "default", label: "Curator's pick" },
-              { value: "price-asc", label: "Price — low to high" },
-              { value: "price-desc", label: "Price — high to low" },
-              { value: "name", label: "Name" },
+              { value: "default", label: t("shop.filters.sortOptions.newest") },
+              { value: "price-asc", label: t("shop.filters.sortOptions.priceAsc") },
+              { value: "price-desc", label: t("shop.filters.sortOptions.priceDesc") },
+              { value: "name", label: t("common.view") },
             ]}
           />
           <p className="ml-auto text-xs tracking-wider2 uppercase text-muted">
-            {filtered.length} {filtered.length === 1 ? "piece" : "pieces"}
+            {countLabel}
           </p>
         </div>
 
@@ -114,7 +126,7 @@ export default function Shop() {
           </div>
         ) : (
           <p className="mt-24 text-center text-muted italic">
-            Nothing matches this combination — try a different category.
+            {t("shop.empty")}
           </p>
         )}
       </div>

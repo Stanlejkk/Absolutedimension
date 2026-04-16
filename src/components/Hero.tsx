@@ -1,22 +1,47 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useLocale, type LocalizedString } from "../i18n";
 
-const SLIDES = [
+interface Slide {
+  image: string;
+  eyebrow: LocalizedString;
+  title: LocalizedString;
+}
+
+const SLIDES: Slide[] = [
   {
     image: "/img/hero/hero-1.png",
-    eyebrow: "Spring / Summer — Edition 07",
-    title: "Sublime silhouettes,\ndesigned to endure.",
+    eyebrow: {
+      en: "Spring / Summer — Edition 07",
+      pl: "Wiosna / Lato — Edycja 07",
+    },
+    title: {
+      en: "Sublime silhouettes,\ndesigned to endure.",
+      pl: "Szlachetne sylwetki,\nzaprojektowane na lata.",
+    },
   },
   {
     image: "/img/hero/hero-2.jpg",
-    eyebrow: "The Monaco Chapter",
-    title: "Harmony of\nluxury.",
+    eyebrow: {
+      en: "The Monaco Chapter",
+      pl: "Rozdział Monaco",
+    },
+    title: {
+      en: "Harmony of\nluxury.",
+      pl: "Harmonia\nluksusu.",
+    },
   },
   {
     image: "/img/hero/hero-3.png",
-    eyebrow: "Made in Poland",
-    title: "An orderly wardrobe,\nworn for years.",
+    eyebrow: {
+      en: "Made in Poland",
+      pl: "Szyte w Polsce",
+    },
+    title: {
+      en: "An orderly wardrobe,\nworn for years.",
+      pl: "Uporządkowana garderoba,\nnoszona przez lata.",
+    },
   },
 ];
 
@@ -24,6 +49,7 @@ const INTERVAL = 6000;
 
 export default function Hero() {
   const [index, setIndex] = useState(0);
+  const { t, pick } = useLocale();
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -70,9 +96,9 @@ export default function Hero() {
                 transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
                 className="max-w-3xl"
               >
-                <p className="eyebrow text-bone/80 mb-6">{slide.eyebrow}</p>
+                <p className="eyebrow text-bone/80 mb-6">{pick(slide.eyebrow)}</p>
                 <h1 className="font-display text-[12vw] leading-[0.95] md:text-[8vw] lg:text-[6.5rem] xl:text-[7.5rem] font-light tracking-tight whitespace-pre-line">
-                  {slide.title}
+                  {pick(slide.title)}
                 </h1>
 
                 <div className="mt-10 flex flex-wrap gap-3">
@@ -80,7 +106,7 @@ export default function Hero() {
                     to="/shop"
                     className="group relative inline-flex items-center gap-3 rounded-full bg-bone text-ink px-7 py-3 text-sm tracking-wide overflow-hidden"
                   >
-                    <span className="relative z-10">Discover</span>
+                    <span className="relative z-10">{t("hero.ctaShop")}</span>
                     <svg
                       viewBox="0 0 24 24"
                       className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1"
@@ -96,7 +122,7 @@ export default function Hero() {
                     to="/about"
                     className="inline-flex items-center gap-2 rounded-full border border-bone/40 text-bone px-7 py-3 text-sm tracking-wide hover:bg-bone hover:text-ink transition"
                   >
-                    Our atelier
+                    {t("hero.ctaStory")}
                   </Link>
                 </div>
               </motion.div>
@@ -110,7 +136,7 @@ export default function Hero() {
               <button
                 key={i}
                 onClick={() => setIndex(i)}
-                aria-label={`Go to slide ${i + 1}`}
+                aria-label={t("hero.goToSlide", { n: i + 1 })}
                 className="group relative h-[2px] w-10 md:w-14 overflow-hidden bg-bone/25"
               >
                 <span
@@ -126,7 +152,7 @@ export default function Hero() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <span className="eyebrow text-bone/70">Scroll</span>
+            <span className="eyebrow text-bone/70">{t("hero.scroll")}</span>
             <motion.span
               animate={{ y: [0, 8, 0] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}

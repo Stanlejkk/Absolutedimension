@@ -1,15 +1,19 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { blogPosts } from "../lib/data";
+import { useBlogPosts } from "../lib/useCatalog";
+import { useLocale } from "../i18n";
+import type { DictionaryKey } from "../i18n";
 
-const TAGS: Record<string, string> = {
-  "sztuka-ubioru": "Editorial",
-  "monaco-collection-story": "Lookbook",
-  "sustainable-luxury": "House",
-  "evening-styling-guide": "Styling",
+const TAG_KEYS: Record<string, DictionaryKey> = {
+  "sztuka-ubioru": "sections.editorialTagEditorial",
+  "monaco-collection-story": "sections.editorialTagLookbook",
+  "sustainable-luxury": "sections.editorialTagHouse",
+  "evening-styling-guide": "sections.editorialTagStyling",
 };
 
 export default function Blog() {
+  const blogPosts = useBlogPosts();
+  const { t, formatDate } = useLocale();
   const [feature, ...rest] = blogPosts;
 
   return (
@@ -21,14 +25,12 @@ export default function Blog() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-3xl mb-14 md:mb-20"
         >
-          <p className="eyebrow mb-4">Journal</p>
+          <p className="eyebrow mb-4">{t("blog.eyebrow")}</p>
           <h1 className="font-display text-5xl md:text-7xl font-light leading-[1]">
-            Words &amp; <span className="italic">images.</span>
+            {t("sections.editorialHeadline1")} <span className="italic">{t("sections.editorialHeadline2")}</span>
           </h1>
           <p className="mt-6 text-muted max-w-xl leading-relaxed">
-            Four letters a year. Editorials from the atelier, notes on our
-            collections, and the occasional correspondence with the people we
-            dress.
+            {t("blog.subtitle")}
           </p>
         </motion.div>
 
@@ -49,7 +51,7 @@ export default function Blog() {
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
                 />
                 <span className="absolute top-4 left-4 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
-                  {TAGS[feature.slug] ?? "Journal"}
+                  {TAG_KEYS[feature.slug] ? t(TAG_KEYS[feature.slug]) : t("blog.eyebrow")}
                 </span>
               </div>
               <div className="lg:col-span-5">
@@ -61,7 +63,7 @@ export default function Blog() {
                 </h2>
                 <p className="mt-5 text-muted leading-relaxed">{feature.excerpt}</p>
                 <span className="mt-6 inline-flex items-center gap-2 text-xs tracking-wider2 uppercase">
-                  Read the letter
+                  {t("blog.readMore")}
                   <span className="block h-px w-8 bg-ink/50 group-hover:w-14 transition-all" />
                 </span>
               </div>
@@ -89,7 +91,7 @@ export default function Blog() {
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
                     />
                     <span className="absolute top-4 left-4 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
-                      {TAGS[post.slug] ?? "Journal"}
+                      {TAG_KEYS[post.slug] ? t(TAG_KEYS[post.slug]) : t("blog.eyebrow")}
                     </span>
                   </div>
                   <div className="mt-5">
@@ -109,16 +111,4 @@ export default function Blog() {
       </div>
     </section>
   );
-}
-
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  } catch {
-    return iso;
-  }
 }

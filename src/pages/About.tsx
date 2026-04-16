@@ -1,33 +1,24 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useLocale } from "../i18n";
+import type { DictionaryKey } from "../i18n";
 
-const stats = [
-  { k: "108+", v: "Unique pieces" },
-  { k: "8", v: "Collections" },
-  { k: "14", v: "Years of atelier" },
-  { k: "100%", v: "Made in Poland" },
-];
-
-const pillars = [
-  {
-    t: "Restraint",
-    d: "We cut once and consider twice. Fewer pieces, chosen with intent — a library of a wardrobe.",
-  },
-  {
-    t: "Craft",
-    d: "Every seam is hand-finished in our Warsaw atelier. Reinforced edges, solid-brass hardware, and a patience that machines cannot replicate.",
-  },
-  {
-    t: "Provenance",
-    d: "Silks from Como, cottons from Puglia, wools from Biella. Fabrics sourced in Italy and France, travelling short distances before they reach our hands.",
-  },
-  {
-    t: "Endurance",
-    d: "We design for a decade, not a season. Our pieces are made to soften with time — and to be kept.",
-  },
-];
+const STAT_KEYS = ["uniquePieces", "collections", "yearsOfAtelier", "madeInPoland"] as const;
+const PILLAR_KEYS = ["restraint", "craft", "provenance", "endurance"] as const;
 
 export default function About() {
+  const { t } = useLocale();
+
+  const stats = STAT_KEYS.map((key) => ({
+    k: t(`about.stats.${key}.value` as DictionaryKey),
+    v: t(`about.stats.${key}.label` as DictionaryKey),
+  }));
+
+  const pillars = PILLAR_KEYS.map((key) => ({
+    t: t(`about.pillars.${key}.title` as DictionaryKey),
+    d: t(`about.pillars.${key}.body` as DictionaryKey),
+  }));
+
   return (
     <article>
       {/* Hero */}
@@ -45,13 +36,12 @@ export default function About() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             >
-              <p className="eyebrow text-bone/70 mb-4">The House</p>
+              <p className="eyebrow text-bone/70 mb-4">{t("about.heroEyebrow")}</p>
               <h1 className="font-display text-6xl md:text-8xl font-light leading-none">
-                About <span className="italic text-gold">us.</span>
+                {t("about.heroTitle1")} <span className="italic text-gold">{t("about.heroTitleItalic")}</span>
               </h1>
               <p className="mt-6 max-w-xl text-bone/80 text-lg leading-relaxed">
-                A Polish house of thoughtful clothing — composed like a library,
-                cut like architecture, worn like a second skin.
+                {t("about.heroSubtitle")}
               </p>
             </motion.div>
           </div>
@@ -68,9 +58,11 @@ export default function About() {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-5 lg:sticky top-28 self-start"
           >
-            <p className="eyebrow mb-4">Philosophy</p>
+            <p className="eyebrow mb-4">{t("about.philosophyEyebrow")}</p>
             <h2 className="font-display text-4xl md:text-6xl font-light leading-[1.05]">
-              An <span className="italic text-gold">orderly</span> way of dressing.
+              {t("about.philosophyTitle1")}{" "}
+              <span className="italic text-gold">{t("about.philosophyTitleItalic")}</span>{" "}
+              {t("about.philosophyTitle2")}
             </h2>
           </motion.div>
 
@@ -82,10 +74,7 @@ export default function About() {
               transition={{ duration: 0.9, delay: 0.1 }}
               className="text-lg md:text-xl leading-relaxed text-ink/85"
             >
-              Absolut Dimension is a Polish house of luxury clothing, creating
-              unique garments inspired by the most beautiful metropolises in
-              the world. From Monaco to Bali, each collection tells the story
-              of a place that inspired it.
+              {t("about.philosophyBody1")}
             </motion.p>
 
             <motion.p
@@ -95,13 +84,7 @@ export default function About() {
               transition={{ duration: 0.9, delay: 0.2 }}
               className="text-base md:text-lg leading-relaxed text-muted"
             >
-              Our pieces are made in a Polish atelier from the finest
-              materials — silk, cashmere, merino wool, and organic cotton.
-              Every element is hand-finished with devotion to the smallest
-              detail. We believe that fashion is a form of artistic
-              expression — so each of our collections joins the tradition of
-              tailoring to contemporary design, creating pieces that are
-              timeless and singular.
+              {t("about.philosophyBody2")}
             </motion.p>
 
             <motion.ul
@@ -142,9 +125,9 @@ export default function About() {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-2xl mb-16"
           >
-            <p className="eyebrow text-bone/60 mb-4">What we keep</p>
+            <p className="eyebrow text-bone/60 mb-4">{t("about.pillarsEyebrow")}</p>
             <h2 className="font-display text-4xl md:text-6xl font-light leading-[1.05]">
-              Four things we <span className="italic text-gold">hold to.</span>
+              {t("about.pillarsTitle1")} <span className="italic text-gold">{t("about.pillarsTitleItalic")}</span>
             </h2>
           </motion.div>
 
@@ -191,22 +174,20 @@ export default function About() {
             transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col justify-center"
           >
-            <p className="eyebrow mb-4">The atelier</p>
+            <p className="eyebrow mb-4">{t("about.atelierEyebrow")}</p>
             <h2 className="font-display text-4xl md:text-5xl font-light leading-[1.1]">
-              Warsaw, <br />
-              Okopowa street.
+              {t("about.atelierTitle1")} <br />
+              {t("about.atelierTitle2")}
             </h2>
             <p className="mt-6 text-muted leading-relaxed max-w-md">
-              A small workshop on a quiet street, where every garment is cut,
-              assembled, and finished by hand. Our team of six has worked
-              together for over a decade.
+              {t("about.atelierBody")}
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
                 to="/collections"
                 className="group relative inline-flex items-center gap-3 rounded-full bg-ink text-bone px-6 py-3 text-sm tracking-wide overflow-hidden"
               >
-                <span className="relative z-10">Discover collections</span>
+                <span className="relative z-10">{t("about.discoverCollections")}</span>
                 <svg viewBox="0 0 24 24" className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -216,7 +197,7 @@ export default function About() {
                 to="/shop"
                 className="inline-flex items-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-sm tracking-wide hover:border-ink transition"
               >
-                Shop the wardrobe
+                {t("about.shopTheWardrobe")}
               </Link>
             </div>
           </motion.div>

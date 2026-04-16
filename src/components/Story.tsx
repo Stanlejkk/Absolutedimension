@@ -1,13 +1,15 @@
 import { motion } from "framer-motion";
-
-const stats = [
-  { k: "14", v: "Years of atelier" },
-  { k: "100%", v: "Made in Poland" },
-  { k: "07", v: "Editions released" },
-  { k: "48h", v: "Hand-finishing" },
-];
+import { useLocale } from "../i18n";
 
 export default function Story() {
+  const { t } = useLocale();
+  const stats = [
+    { k: t("sections.storyStat1Value"), v: t("sections.storyStat1Label") },
+    { k: t("sections.storyStat2Value"), v: t("sections.storyStat2Label") },
+    { k: t("sections.storyStat3Value"), v: t("sections.storyStat3Label") },
+    { k: t("sections.storyStat4Value"), v: t("sections.storyStat4Label") },
+  ];
+
   return (
     <section id="story" className="relative py-24 md:py-36">
       <div className="container-x grid lg:grid-cols-12 gap-12 lg:gap-20 items-start">
@@ -18,9 +20,11 @@ export default function Story() {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="lg:col-span-5 lg:sticky top-24"
         >
-          <p className="eyebrow mb-5">Our atelier</p>
+          <p className="eyebrow mb-5">{t("sections.storyEyebrow")}</p>
           <h2 className="font-display text-5xl md:text-7xl font-light leading-[1.02]">
-            An <span className="italic text-gold">orderly</span> way of dressing.
+            {t("sections.storyHeadline1")}{" "}
+            <span className="italic text-gold">{t("sections.storyHeadlineItalic")}</span>{" "}
+            {t("sections.storyHeadline2")}
           </h2>
         </motion.div>
 
@@ -32,9 +36,7 @@ export default function Story() {
             transition={{ duration: 0.9, delay: 0.1 }}
             className="text-lg md:text-xl leading-relaxed text-ink/80"
           >
-            Absolut Dimension is a study in restraint — a house dedicated to the
-            idea that a wardrobe should be composed like a library, each piece
-            chosen with intent and kept for its own sake.
+            {t("sections.storyLead")}
           </motion.p>
 
           <motion.p
@@ -44,9 +46,7 @@ export default function Story() {
             transition={{ duration: 0.9, delay: 0.2 }}
             className="text-base md:text-lg leading-relaxed text-muted"
           >
-            We work with small Polish ateliers to cut silhouettes that honour the
-            human form. Fabrics are sourced in Italy and France; finishing is done
-            by hand. Nothing in our house is rushed.
+            {t("sections.storyPara2")}
           </motion.p>
 
           <motion.ul

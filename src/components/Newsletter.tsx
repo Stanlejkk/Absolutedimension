@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useLocale } from "../i18n";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const { t } = useLocale();
 
   return (
     <section className="relative py-24 md:py-36 bg-[#ece5d8] overflow-hidden">
@@ -22,14 +24,13 @@ export default function Newsletter() {
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="eyebrow mb-5">The letter</p>
+          <p className="eyebrow mb-5">{t("newsletter.eyebrow")}</p>
           <h2 className="font-display text-5xl md:text-6xl font-light leading-[1.05]">
-            Correspondence, <br />
-            <span className="italic text-gold">quietly delivered.</span>
+            {t("newsletter.titleLine1")} <br />
+            <span className="italic text-gold">{t("newsletter.titleLine2")}</span>
           </h2>
           <p className="mt-6 text-muted max-w-md leading-relaxed">
-            Four letters a year. New editions, early access, and occasional
-            notes from the atelier. No noise.
+            {t("newsletter.body")}
           </p>
         </motion.div>
 
@@ -48,7 +49,7 @@ export default function Newsletter() {
             <input
               type="email"
               required
-              placeholder="your@address.com"
+              placeholder={t("newsletter.placeholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="flex-1 bg-transparent outline-none text-lg placeholder:text-ink/40"
@@ -57,7 +58,7 @@ export default function Newsletter() {
               type="submit"
               className="group shrink-0 inline-flex items-center gap-2 text-sm tracking-wider2 uppercase"
             >
-              Subscribe
+              {t("newsletter.submit")}
               <svg
                 viewBox="0 0 24 24"
                 className="h-4 w-4 transition-transform group-hover:translate-x-1"
@@ -70,7 +71,7 @@ export default function Newsletter() {
             </button>
           </div>
           <p className="mt-4 text-xs tracking-wide text-muted">
-            By subscribing you accept our privacy policy.
+            {t("newsletter.privacy")}
           </p>
           {sent && (
             <motion.p
@@ -78,7 +79,7 @@ export default function Newsletter() {
               animate={{ opacity: 1, y: 0 }}
               className="mt-4 text-sm italic text-ink"
             >
-              Merci. Your first letter will arrive soon.
+              {t("newsletter.success")}
             </motion.p>
           )}
         </motion.form>

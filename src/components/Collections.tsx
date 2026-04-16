@@ -1,12 +1,15 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { collections, getProductsByCollection } from "../lib/data";
+import { useCollections, useProductsByCollection } from "../lib/useCatalog";
+import { useLocale } from "../i18n";
 
 export default function Collections() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["-6%", "6%"]);
+  const { t } = useLocale();
+  const collections = useCollections();
 
   return (
     <section id="collections" ref={ref} className="relative py-24 md:py-36 bg-ink text-bone overflow-hidden">
@@ -25,8 +28,8 @@ export default function Collections() {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="font-display text-5xl md:text-7xl font-light leading-[1]"
           >
-            Collections <br />
-            <span className="italic text-gold">without season.</span>
+            {t("sections.collectionsHeadline1")} <br />
+            <span className="italic text-gold">{t("sections.collectionsHeadline2")}</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -35,9 +38,7 @@ export default function Collections() {
             transition={{ duration: 0.9, delay: 0.1 }}
             className="text-bone/70 max-w-md text-base md:text-lg leading-relaxed"
           >
-            We resist trends. Our garments are conceived as long companions — cut
-            once, considered twice, and rendered in materials that soften with
-            time.
+            {t("sections.collectionsBody")}
           </motion.p>
         </div>
 
@@ -58,7 +59,7 @@ export default function Collections() {
             to="/collections"
             className="inline-flex items-center gap-2 text-sm tracking-wide text-bone/70 hover:text-bone group"
           >
-            Explore all collections
+            {t("sections.collectionsExploreAll")}
             <span className="block h-px w-10 bg-bone/30 group-hover:w-16 transition-all" />
           </Link>
         </motion.div>
@@ -78,7 +79,11 @@ function CollectionRow({
   tagline: string;
   i: number;
 }) {
-  const pieceCount = getProductsByCollection(slug).length;
+  const pieceCount = useProductsByCollection(slug).length;
+  const { t, plural } = useLocale();
+  const pieceLabel = t(`collections.pieceCount.${plural(pieceCount)}` as "collections.pieceCount.other", {
+    count: pieceCount,
+  });
 
   return (
     <motion.li
@@ -101,7 +106,7 @@ function CollectionRow({
           {tagline}
         </p>
         <span className="col-span-3 md:col-span-2 justify-self-end text-xs tracking-wider2 text-bone/60">
-          {pieceCount} pieces
+          {pieceLabel}
         </span>
 
         <motion.span

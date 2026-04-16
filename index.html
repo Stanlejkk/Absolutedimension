@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pl">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -11,12 +11,12 @@
     <title>Absolut Dimension — SM.ART Wardrobe</title>
     <meta
       name="description"
-      content="A thoughtful, orderly wardrobe designed to serve for years. Timeless silhouettes and sublime aesthetics."
+      content="Przemyślana, uporządkowana garderoba zaprojektowana, aby służyć latami. Ponadczasowe sylwetki i szlachetna estetyka."
     />
     <meta property="og:title" content="Absolut Dimension — SM.ART Wardrobe" />
     <meta
       property="og:description"
-      content="A thoughtful, orderly wardrobe designed to serve for years. Timeless silhouettes and sublime aesthetics."
+      content="Przemyślana, uporządkowana garderoba zaprojektowana, aby służyć latami. Ponadczasowe sylwetki i szlachetna estetyka."
     />
     <meta
       property="og:image"
@@ -27,18 +27,42 @@
     <meta name="twitter:title" content="Absolut Dimension — SM.ART Wardrobe" />
     <meta
       name="twitter:description"
-      content="A thoughtful, orderly wardrobe designed to serve for years. Timeless silhouettes and sublime aesthetics."
+      content="Przemyślana, uporządkowana garderoba zaprojektowana, aby służyć latami. Ponadczasowe sylwetki i szlachetna estetyka."
     />
     <meta
       name="twitter:image"
       content="https://www.absolutdimension.com/cdn/shop/files/logo_www_transparent.png?v=1760455149&width=400"
     />
+    <!-- Theme color so mobile chrome matches the bone palette -->
+    <meta name="theme-color" content="#f4f0ea" />
+    <meta name="color-scheme" content="light" />
+
+    <!-- Early connection hints to the hosts we actually hit on first paint -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.absolutdimension.com" />
+
+    <!-- Non-render-blocking Google Fonts.
+         The <link rel="preload"> warms the cache; the media="print" + onload trick
+         lets the CSS download in parallel without blocking first paint. The
+         <noscript> fallback preserves the old behaviour for no-JS users. -->
     <link
+      rel="preload"
+      as="style"
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap"
+      />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>

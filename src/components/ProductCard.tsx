@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { formatPrice, type Product } from "../lib/data";
+import { useFormatPrice, type ResolvedProduct } from "../lib/useCatalog";
+import { useT } from "../i18n";
 
 type Props = {
-  product: Product;
+  product: ResolvedProduct;
   index?: number;
   /** Render with a denser layout (used on shop/collection grids) */
   dense?: boolean;
@@ -12,6 +13,8 @@ type Props = {
 
 export default function ProductCard({ product, index = 0, dense = false }: Props) {
   const [imgFailed, setImgFailed] = useState(false);
+  const formatPrice = useFormatPrice();
+  const t = useT();
 
   return (
     <motion.div
@@ -39,7 +42,7 @@ export default function ProductCard({ product, index = 0, dense = false }: Props
 
           {product.newArrival && (
             <span className="absolute top-3 left-3 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
-              New
+              {t("shop.badges.new")}
             </span>
           )}
 
@@ -50,7 +53,7 @@ export default function ProductCard({ product, index = 0, dense = false }: Props
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="absolute inset-x-0 bottom-0 bg-ink/90 text-bone backdrop-blur-sm px-4 py-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <span className="text-xs tracking-wider2 uppercase">View</span>
+            <span className="text-xs tracking-wider2 uppercase">{t("common.view")}</span>
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
