@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 type Product = {
   name: string;
@@ -6,6 +7,8 @@ type Product = {
   price: string;
   palette: [string, string, string];
   silhouette: "dress" | "top" | "coat" | "trousers";
+  image?: string;
+  href: string;
 };
 
 const products: Product[] = [
@@ -15,27 +18,31 @@ const products: Product[] = [
     price: "€ 680",
     palette: ["#d9c9b2", "#8a7456", "#1a1a1a"],
     silhouette: "dress",
+    href: "https://www.absolutdimension.com/en/products/sukienka-coctail-absolut",
   },
   {
-    name: "Top Absolut",
-    category: "Sculpted Blouse",
+    name: "21_Top Absolut",
+    category: "Silk Satin Top",
     price: "€ 320",
     palette: ["#f4ece0", "#c6b091", "#6b5c46"],
     silhouette: "top",
+    href: "https://www.absolutdimension.com/en/products/top-absolut",
   },
   {
-    name: "Manteau Noir",
-    category: "Tailored Coat",
+    name: "16_Coat Meisei",
+    category: "Hand-woven Fur Coat",
     price: "€ 1 240",
     palette: ["#2a2a2a", "#525252", "#0d0d0d"],
     silhouette: "coat",
+    href: "https://www.absolutdimension.com/en/products/set-maturite-1",
   },
   {
-    name: "Pantalon Haute",
-    category: "Wide Trousers",
-    price: "€ 460",
+    name: "37.Dress ICON",
+    category: "Velvet Dress",
+    price: "€ 860",
     palette: ["#ece5d8", "#b8936a", "#433423"],
-    silhouette: "trousers",
+    silhouette: "dress",
+    href: "https://www.absolutdimension.com/en/products/37-sukienka-icon",
   },
 ];
 
@@ -56,7 +63,9 @@ export default function FeaturedProducts() {
             </h2>
           </motion.div>
           <motion.a
-            href="#"
+            href="https://www.absolutdimension.com/en/collections/all"
+            target="_blank"
+            rel="noreferrer"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -79,9 +88,14 @@ export default function FeaturedProducts() {
 }
 
 function ProductCard({ product, index }: { product: Product; index: number }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = product.image && !imgFailed;
+
   return (
     <motion.a
-      href="#"
+      href={product.href}
+      target="_blank"
+      rel="noreferrer"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
@@ -89,7 +103,18 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       className="group block"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-[#e8ddcb]">
-        <GarmentSVG palette={product.palette} silhouette={product.silhouette} />
+        {showImage ? (
+          <motion.img
+            src={product.image}
+            alt={product.name}
+            onError={() => setImgFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover"
+            whileHover={{ scale: 1.04 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          />
+        ) : (
+          <GarmentSVG palette={product.palette} silhouette={product.silhouette} />
+        )}
         <motion.div
           aria-hidden
           initial={{ y: "100%" }}

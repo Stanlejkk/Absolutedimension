@@ -1,11 +1,20 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+
+const heroLook = {
+  name: "Absolut Paris",
+  price: "€ 680",
+  href: "https://www.absolutdimension.com/en/products/sukienka-coctail-absolut",
+  image: "" as string,
+};
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.9], [1, 0]);
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = heroLook.image && !imgFailed;
 
   const title = ["Sublime", "silhouettes,", "designed", "to", "endure."];
 
@@ -98,8 +107,22 @@ export default function Hero() {
           transition={{ duration: 1.1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="lg:col-span-5 relative"
         >
-          <div className="relative aspect-[3/4] rounded-[2px] overflow-hidden bg-[#d9cfc0]">
-            <HeroSVG />
+          <a
+            href={heroLook.href}
+            target="_blank"
+            rel="noreferrer"
+            className="block relative aspect-[3/4] rounded-[2px] overflow-hidden bg-[#d9cfc0]"
+          >
+            {showImage ? (
+              <img
+                src={heroLook.image}
+                alt={heroLook.name}
+                onError={() => setImgFailed(true)}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <HeroSVG />
+            )}
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -108,11 +131,11 @@ export default function Hero() {
             >
               <div>
                 <p className="eyebrow text-bone/70">Look 01</p>
-                <p className="font-display text-2xl">Absolut Paris</p>
+                <p className="font-display text-2xl">{heroLook.name}</p>
               </div>
-              <p className="text-sm tracking-wider2">€ 680</p>
+              <p className="text-sm tracking-wider2">{heroLook.price}</p>
             </motion.div>
-          </div>
+          </a>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
