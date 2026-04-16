@@ -4,16 +4,19 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { LocaleProvider } from "./i18n";
 import { CartProvider } from "./lib/CartContext";
+import { AuthProvider } from "./lib/AuthContext";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <LocaleProvider>
-      <CartProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </CartProvider>
+      </AuthProvider>
     </LocaleProvider>
   </StrictMode>,
 );
