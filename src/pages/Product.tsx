@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import {
   useProduct,
   useCollection,
@@ -10,6 +16,11 @@ import {
 import ProductCard from "../components/ProductCard";
 import { useLocale } from "../i18n";
 import { useCart } from "../lib/CartContext";
+import { useProductTransition } from "../components/motion/ProductTransition";
+import { useFlyToCart } from "../components/motion/FlyToCart";
+import { useToast } from "../components/motion/Toast";
+import SpringNumber from "../components/motion/SpringNumber";
+import Grain from "../components/motion/Grain";
 
 export default function Product() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +31,41 @@ export default function Product() {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [added, setAdded] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
+  const reduced = useReducedMotion();
+  const { consume } = useProductTransition();
+  const { fly } = useFlyToCart();
+  const toast = useToast();
+
+  const imageWrapRef = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: galleryRef,
+    offset: ["start start", "end end"],
+  });
+  const smooth = useSpring(scrollYProgress, {
+    stiffness: 90,
+    damping: 24,
+    mass: 0.5,
+  });
+  const heroScale = useTransform(smooth, [0, 1], [1, 1.22]);
+  const heroY = useTransform(smooth, [0, 1], ["0%", "-6%"]);
+  const heroX = useTransform(smooth, [0, 1], ["0%", "4%"]);
+  const caption1 = useTransform(smooth, [0, 0.33, 0.5], [1, 1, 0]);
+  const caption2 = useTransform(smooth, [0.25, 0.5, 0.75], [0, 1, 0]);
+  const caption3 = useTransform(smooth, [0.5, 0.72, 1], [0, 1, 1]);
+
+  // Consume a pending card→page shared-element animation once the image
+  // has a real on-screen rect to land on. We use a rAF to avoid measuring
+  // before layout stabilises.
+  useEffect(() => {
+    if (!product || reduced) return;
+    const raf = window.requestAnimationFrame(() => {
+      const rect = imageWrapRef.current?.getBoundingClientRect() ?? null;
+      consume(product.id, rect);
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [product, consume, reduced]);
 
   const collection = useCollection(product?.collection);
   const collectionProducts = useProductsByCollection(product?.collection);
@@ -51,20 +97,31 @@ export default function Product() {
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2400);
+
+    const rect = imageWrapRef.current?.getBoundingClientRect();
+    if (rect) {
+      fly({ from: rect, image: product.image });
+    }
+    toast.push({
+      kind: "success",
+      title: t("cart.addedToast"),
+      body: `${product.name} — ${selectedSize}`,
+      image: product.image,
+    });
   };
 
   return (
-    <article className="pt-28 md:pt-32 pb-24 md:pb-32">
-      <div className="container-x">
+    <article className="pb-24 md:pb-32">
+      <div className="container-x pt-28 md:pt-32">
         {/* Breadcrumbs */}
         <nav className="flex flex-wrap gap-2 text-xs tracking-wide text-muted mb-8">
-          <Link to="/" className="hover:text-ink">{t("product.breadcrumbHome")}</Link>
+          <Link to="/" className="link-rule hover:text-ink">{t("product.breadcrumbHome")}</Link>
           <span>/</span>
-          <Link to="/shop" className="hover:text-ink">{t("nav.shop")}</Link>
+          <Link to="/shop" className="link-rule hover:text-ink">{t("nav.shop")}</Link>
           <span>/</span>
           {collection && (
             <>
-              <Link to={`/collections/${collection.slug}`} className="hover:text-ink">
+              <Link to={`/collections/${collection.slug}`} className="link-rule hover:text-ink">
                 {collection.name}
               </Link>
               <span>/</span>
@@ -74,33 +131,84 @@ export default function Product() {
         </nav>
 
         <div className="grid lg:grid-cols-12 gap-10 lg:gap-16">
-          {/* Image — sticky on desktop */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-7"
-          >
-            <div className="relative aspect-[3/4] overflow-hidden bg-[#e8ddcb]">
-              {!imgFailed ? (
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  onError={() => setImgFailed(true)}
-                  className="absolute inset-0 h-full w-full object-cover object-top"
-                />
-              ) : (
-                <div className="absolute inset-0 grid place-items-center text-muted italic">
-                  {product.name}
-                </div>
-              )}
-              {product.newArrival && (
-                <span className="absolute top-4 left-4 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
-                  {t("shop.badges.new")}
-                </span>
-              )}
-            </div>
-          </motion.div>
+          {/* Image column — a tall scroll-pinned canvas that scrubs
+              through three "chapters" as the shopper reads the details. */}
+          <div ref={galleryRef} className="lg:col-span-7 lg:h-[220vh] relative">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="lg:sticky lg:top-24"
+            >
+              <div
+                ref={imageWrapRef}
+                className="relative aspect-[3/4] overflow-hidden bg-[#e8ddcb]"
+              >
+                {!imgFailed ? (
+                  <motion.img
+                    src={product.image}
+                    alt={product.name}
+                    onError={() => setImgFailed(true)}
+                    style={reduced ? undefined : { scale: heroScale, y: heroY, x: heroX }}
+                    className="absolute inset-0 h-full w-full object-cover object-top will-change-transform"
+                  />
+                ) : (
+                  <div className="absolute inset-0 grid place-items-center text-muted italic">
+                    {product.name}
+                  </div>
+                )}
+
+                <Grain opacity={0.14} />
+
+                {product.newArrival && (
+                  <span className="absolute top-4 left-4 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
+                    {t("shop.badges.new")}
+                  </span>
+                )}
+
+                {/* Scroll-linked chapter captions — sweep across the image */}
+                {!reduced && (
+                  <div className="pointer-events-none absolute inset-x-6 bottom-6 hidden md:flex items-end justify-between text-bone">
+                    <motion.div style={{ opacity: caption1 }} className="max-w-[14rem]">
+                      <p className="eyebrow text-bone/70">01 — {t("product.details")}</p>
+                      <p className="font-display text-lg leading-snug mt-2">
+                        {product.name}
+                      </p>
+                    </motion.div>
+                    <motion.div
+                      style={{ opacity: caption2 }}
+                      className="max-w-[14rem] text-right"
+                    >
+                      <p className="eyebrow text-bone/70">
+                        02 — {t("product.materials")}
+                      </p>
+                      <p className="font-display italic text-lg leading-snug mt-2">
+                        {t("product.madeIn")}
+                      </p>
+                    </motion.div>
+                    <motion.div
+                      style={{ opacity: caption3 }}
+                      className="absolute inset-x-0 -bottom-1 text-center"
+                    >
+                      <p className="eyebrow text-bone/70">
+                        03 — {collection?.name ?? t("product.collectionSuffix")}
+                      </p>
+                    </motion.div>
+                  </div>
+                )}
+
+                {/* Progress rail for the chapter scroll */}
+                {!reduced && (
+                  <div className="pointer-events-none absolute top-0 right-0 h-full w-0.5 bg-bone/10">
+                    <motion.div
+                      style={{ scaleY: smooth }}
+                      className="h-full w-full origin-top bg-bone/80"
+                    />
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
 
           {/* Details */}
           <motion.div
@@ -110,14 +218,19 @@ export default function Product() {
             className="lg:col-span-5 flex flex-col lg:sticky lg:top-28 self-start"
           >
             {collection && (
-              <Link to={`/collections/${collection.slug}`} className="eyebrow text-muted hover:text-ink mb-3">
+              <Link
+                to={`/collections/${collection.slug}`}
+                className="link-rule eyebrow text-muted hover:text-ink mb-3 self-start"
+              >
                 {collection.name} {t("product.collectionSuffix")}
               </Link>
             )}
             <h1 className="font-display text-4xl md:text-5xl font-light leading-[1.05]">
               {product.name}
             </h1>
-            <p className="mt-4 text-xl tracking-wide text-ink">{formatPrice(product.price)}</p>
+            <p className="mt-4 text-xl tracking-wide text-ink tabular-nums">
+              <SpringNumber value={product.price} format={formatPrice} />
+            </p>
             <p className="mt-6 text-muted leading-relaxed">{product.description}</p>
 
             {/* Sizes */}
@@ -125,9 +238,12 @@ export default function Product() {
               <p className="eyebrow mb-3">{t("product.size")}</p>
               <div className="flex flex-wrap gap-2">
                 {product.sizes.map((size) => (
-                  <button
+                  <motion.button
                     key={size}
                     onClick={() => setSelectedSize(size)}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 22 }}
                     className={`min-w-[3rem] px-4 py-2 text-xs tracking-wider2 uppercase border transition-colors ${
                       selectedSize === size
                         ? "border-ink bg-ink text-bone"
@@ -135,7 +251,7 @@ export default function Product() {
                     }`}
                   >
                     {size}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -145,6 +261,7 @@ export default function Product() {
               <motion.button
                 onClick={handleAdd}
                 disabled={!selectedSize}
+                data-cursor={selectedSize ? "Add" : undefined}
                 whileHover={selectedSize ? { scale: 1.01 } : undefined}
                 whileTap={selectedSize ? { scale: 0.985 } : undefined}
                 animate={added ? { scale: [1, 1.04, 1] } : { scale: 1 }}

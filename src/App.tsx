@@ -6,6 +6,10 @@ import ScrollToTop from "./components/ScrollToTop";
 import CartDrawer from "./components/CartDrawer";
 import PageTransition from "./components/motion/PageTransition";
 import ScrollProgress from "./components/motion/ScrollProgress";
+import EditorialCursor from "./components/motion/EditorialCursor";
+import { ToastProvider } from "./components/motion/Toast";
+import { FlyToCartProvider } from "./components/motion/FlyToCart";
+import { ProductTransitionProvider } from "./components/motion/ProductTransition";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Product from "./pages/Product";
@@ -26,35 +30,42 @@ export default function App() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-bone text-ink">
-      <ScrollToTop />
-      <ScrollProgress />
-      <Navbar />
-      <main>
-        <AnimatePresence mode="wait" initial={false}>
-          <PageTransition key={location.pathname}>
-            <Routes location={location}>
-              <Route path="/" element={<Home />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/product/:id" element={<Product />} />
-              <Route path="/collections" element={<CollectionsIndex />} />
-              <Route path="/collections/:slug" element={<Collection />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </PageTransition>
-        </AnimatePresence>
-      </main>
-      <Footer />
-      <CartDrawer />
-    </div>
+    <ToastProvider>
+      <FlyToCartProvider>
+        <ProductTransitionProvider>
+          <div className="min-h-screen bg-bone text-ink">
+            <ScrollToTop />
+            <ScrollProgress />
+            <EditorialCursor />
+            <Navbar />
+            <main>
+              <AnimatePresence mode="wait" initial={false}>
+                <PageTransition key={location.pathname}>
+                  <Routes location={location}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/shop" element={<Shop />} />
+                    <Route path="/product/:id" element={<Product />} />
+                    <Route path="/collections" element={<CollectionsIndex />} />
+                    <Route path="/collections/:slug" element={<Collection />} />
+                    <Route path="/blog" element={<Blog />} />
+                    <Route path="/blog/:slug" element={<BlogPost />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/account" element={<Account />} />
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </PageTransition>
+              </AnimatePresence>
+            </main>
+            <Footer />
+            <CartDrawer />
+          </div>
+        </ProductTransitionProvider>
+      </FlyToCartProvider>
+    </ToastProvider>
   );
 }

@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { useLocale, type LocalizedString } from "../i18n";
 import MagneticButton from "./motion/MagneticButton";
 import SplitText from "./motion/SplitText";
+import Grain from "./motion/Grain";
 
 interface Slide {
   image: string;
@@ -112,6 +113,25 @@ export default function Hero() {
         </motion.div>
       </AnimatePresence>
 
+      {/* Editorial film grain — a breath of 35mm noise that moves with
+          the image plane, softening the gradient edges. */}
+      <Grain opacity={0.18} className="z-[2]" />
+      {/* A slow shimmer sweep across the hero, once per minute-ish, gives
+          the still a living-photograph quality without shouting. */}
+      <motion.span
+        aria-hidden
+        initial={{ x: "-120%" }}
+        animate={{ x: ["-120%", "120%"] }}
+        transition={{
+          duration: 9,
+          delay: 2,
+          repeat: Infinity,
+          repeatDelay: 16,
+          ease: [0.76, 0, 0.24, 1],
+        }}
+        className="pointer-events-none absolute inset-y-0 z-[3] w-[40%] bg-gradient-to-r from-transparent via-bone/5 to-transparent mix-blend-soft-light"
+      />
+
       <motion.div
         style={{ y: smoothTextY, opacity: textOpacity }}
         className="relative z-10 flex h-full flex-col"
@@ -155,6 +175,7 @@ export default function Hero() {
                   <MagneticButton strength={0.3} className="inline-block">
                     <Link
                       to="/shop"
+                      data-cursor="Shop"
                       className="group relative inline-flex items-center gap-3 rounded-full bg-bone text-ink px-7 py-3 text-sm tracking-wide overflow-hidden"
                     >
                       <span className="relative z-10 transition-colors duration-500 group-hover:text-bone">
@@ -175,6 +196,7 @@ export default function Hero() {
                   <MagneticButton strength={0.25} className="inline-block">
                     <Link
                       to="/about"
+                      data-cursor="Story"
                       className="inline-flex items-center gap-2 rounded-full border border-bone/40 text-bone px-7 py-3 text-sm tracking-wide hover:bg-bone hover:text-ink transition"
                     >
                       {t("hero.ctaStory")}
