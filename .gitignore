@@ -1,7 +1,12 @@
 node_modules
 dist
 dist-ssr
+dist-verify
 *.local
 .DS_Store
 .vite
 *.tsbuildinfo
+
+# scratch + transient build artefacts
+_scratch_trash/
+vite.config.ts.timestamp-*.mjs

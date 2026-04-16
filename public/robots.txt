@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /assets/
+
+# When a canonical domain is known, add:
+# Sitemap: https://www.absolutdimension.com/sitemap.xml
