@@ -1,8 +1,9 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useFormatPrice, type ResolvedProduct } from "../lib/useCatalog";
 import { useT } from "../i18n";
+import TiltCard from "./motion/TiltCard";
 
 type Props = {
   product: ResolvedProduct;
@@ -11,28 +12,38 @@ type Props = {
   dense?: boolean;
 };
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 export default function ProductCard({ product, index = 0, dense = false }: Props) {
   const [imgFailed, setImgFailed] = useState(false);
   const formatPrice = useFormatPrice();
   const t = useT();
+  const reduced = useReducedMotion();
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={reduced ? false : { opacity: 0, y: 36, filter: "blur(6px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.8, delay: Math.min(index, 6) * 0.05, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.9, delay: Math.min(index, 6) * 0.06, ease: EASE }}
       className="group"
     >
       <Link to={`/product/${product.id}`} className="block">
-        <div className="relative aspect-[3/4] overflow-hidden bg-[#e8ddcb]">
+        <TiltCard
+          max={4}
+          className="relative aspect-[3/4] overflow-hidden bg-[#e8ddcb] will-change-transform"
+        >
           {!imgFailed ? (
-            <img
+            <motion.img
               src={product.image}
               alt={product.name}
               onError={() => setImgFailed(true)}
               loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+              initial={reduced ? undefined : { scale: 1.08, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 1.4, ease: EASE }}
+              className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
             />
           ) : (
             <div className="absolute inset-0 grid place-items-center text-muted/60 text-xs tracking-wider2 uppercase">
@@ -40,17 +51,29 @@ export default function ProductCard({ product, index = 0, dense = false }: Props
             </div>
           )}
 
+          {/* Soft vignette that deepens on hover — adds weight to the tile */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          />
+
           {product.newArrival && (
-            <span className="absolute top-3 left-3 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
+            <motion.span
+              initial={{ opacity: 0, y: -6 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
+              className="absolute top-3 left-3 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1"
+            >
               {t("shop.badges.new")}
-            </span>
+            </motion.span>
           )}
 
           <motion.div
             aria-hidden
             initial={{ y: "100%" }}
             whileHover={{ y: 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.45, ease: EASE }}
             className="absolute inset-x-0 bottom-0 bg-ink/90 text-bone backdrop-blur-sm px-4 py-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <span className="text-xs tracking-wider2 uppercase">{t("common.view")}</span>
@@ -58,18 +81,24 @@ export default function ProductCard({ product, index = 0, dense = false }: Props
               <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </motion.div>
-        </div>
+        </TiltCard>
 
         <div className={`mt-4 flex items-start justify-between gap-4 ${dense ? "mt-3" : ""}`}>
           <div>
             <p className="eyebrow text-muted/80 capitalize">{product.collection.replace("-", " ")}</p>
             <h3
-              className={`font-display mt-1 ${dense ? "text-lg md:text-xl" : "text-xl md:text-2xl"}`}
+              className={`font-display mt-1 relative inline-block ${dense ? "text-lg md:text-xl" : "text-xl md:text-2xl"}`}
             >
-              {product.name}
+              <span className="relative">
+                {product.name}
+                <span
+                  aria-hidden
+                  className="absolute left-0 -bottom-0.5 h-px w-full origin-left scale-x-0 bg-ink/40 group-hover:scale-x-100 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                />
+              </span>
             </h3>
           </div>
-          <p className="text-sm tracking-wide mt-1 shrink-0">{formatPrice(product.price)}</p>
+          <p className="text-sm tracking-wide mt-1 shrink-0 tabular-nums">{formatPrice(product.price)}</p>
         </div>
       </Link>
     </motion.div>

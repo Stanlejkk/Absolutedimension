@@ -21,11 +21,36 @@ export default function Story() {
           className="lg:col-span-5 lg:sticky top-24"
         >
           <p className="eyebrow mb-5">{t("sections.storyEyebrow")}</p>
-          <h2 className="font-display text-5xl md:text-7xl font-light leading-[1.02]">
-            {t("sections.storyHeadline1")}{" "}
-            <span className="italic text-gold">{t("sections.storyHeadlineItalic")}</span>{" "}
-            {t("sections.storyHeadline2")}
-          </h2>
+          <motion.h2
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ staggerChildren: 0.08, delayChildren: 0.05 }}
+            className="font-display text-5xl md:text-7xl font-light leading-[1.02]"
+          >
+            {[
+              { text: t("sections.storyHeadline1"), italic: false },
+              { text: t("sections.storyHeadlineItalic"), italic: true },
+              { text: t("sections.storyHeadline2"), italic: false },
+            ].map((segment, i) => (
+              <span key={i} className="inline-block overflow-hidden align-baseline">
+                <motion.span
+                  variants={{
+                    hidden: { y: "110%", opacity: 0 },
+                    show: {
+                      y: 0,
+                      opacity: 1,
+                      transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+                    },
+                  }}
+                  className={`inline-block ${segment.italic ? "italic text-gold" : ""}`}
+                >
+                  {segment.text}
+                </motion.span>
+                {i < 2 ? "\u00A0" : null}
+              </span>
+            ))}
+          </motion.h2>
         </motion.div>
 
         <div className="lg:col-span-7 space-y-10">

@@ -4,6 +4,8 @@ import { useBlogPosts } from "../lib/useCatalog";
 import { useLocale } from "../i18n";
 import type { DictionaryKey } from "../i18n";
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 const TAG_KEYS: Record<string, DictionaryKey> = {
   "sztuka-ubioru": "sections.editorialTagEditorial",
   "monaco-collection-story": "sections.editorialTagLookbook",
@@ -19,7 +21,6 @@ const HUES: Record<string, string> = {
 };
 
 export default function Editorial() {
-  // Use first three posts on the homepage — matches the 3-column layout
   const entries = useBlogPosts().slice(0, 3);
   const { t } = useLocale();
 
@@ -31,13 +32,39 @@ export default function Editorial() {
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.8, ease: EASE }}
           >
             <p className="eyebrow mb-4">{t("sections.editorialEyebrow")}</p>
-            <h2 className="font-display text-5xl md:text-7xl font-light leading-[1]">
-              {t("sections.editorialHeadline1")}{" "}
-              <span className="italic">{t("sections.editorialHeadline2")}</span>
-            </h2>
+            <motion.h2
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ staggerChildren: 0.09 }}
+              className="font-display text-5xl md:text-7xl font-light leading-[1]"
+            >
+              <span className="inline-block overflow-hidden align-baseline">
+                <motion.span
+                  variants={{
+                    hidden: { y: "110%" },
+                    show: { y: 0, transition: { duration: 0.95, ease: EASE } },
+                  }}
+                  className="inline-block"
+                >
+                  {t("sections.editorialHeadline1")}
+                </motion.span>
+              </span>{" "}
+              <span className="inline-block overflow-hidden align-baseline">
+                <motion.span
+                  variants={{
+                    hidden: { y: "110%" },
+                    show: { y: 0, transition: { duration: 0.95, ease: EASE } },
+                  }}
+                  className="inline-block italic"
+                >
+                  {t("sections.editorialHeadline2")}
+                </motion.span>
+              </span>
+            </motion.h2>
           </motion.div>
           <Link
             to="/blog"
@@ -54,21 +81,30 @@ export default function Editorial() {
             return (
               <motion.div
                 key={e.slug}
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 44 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.9, delay: i * 0.12, ease: EASE }}
               >
                 <Link to={`/blog/${e.slug}`} className="group block">
                   <div
                     className="relative aspect-[4/5] overflow-hidden"
                     style={{ backgroundColor: HUES[e.slug] ?? "#e9dfcf" }}
                   >
-                    <img
+                    {/* Clip-path reveal — image unveils from top to bottom */}
+                    <motion.img
                       src={e.image}
                       alt={e.title}
                       loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+                      initial={{ clipPath: "inset(100% 0 0 0)" }}
+                      whileInView={{ clipPath: "inset(0% 0 0 0)" }}
+                      viewport={{ once: true, margin: "-60px" }}
+                      transition={{ duration: 1.2, delay: i * 0.12 + 0.1, ease: EASE }}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+                    />
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                     />
                     <div className="absolute top-4 left-4">
                       <span className="bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
@@ -77,7 +113,15 @@ export default function Editorial() {
                     </div>
                   </div>
                   <div className="mt-5">
-                    <h3 className="font-display text-2xl md:text-3xl font-light">{e.title}</h3>
+                    <h3 className="font-display text-2xl md:text-3xl font-light">
+                      <span className="relative inline-block">
+                        <span className="relative">{e.title}</span>
+                        <span
+                          aria-hidden
+                          className="absolute left-0 -bottom-0.5 h-px w-full origin-left scale-x-0 bg-ink/40 group-hover:scale-x-100 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                        />
+                      </span>
+                    </h3>
                     <p className="mt-2 text-sm text-muted leading-relaxed line-clamp-3">{e.excerpt}</p>
                     <span className="mt-4 inline-flex items-center gap-2 text-xs tracking-wider2 uppercase">
                       {t("sections.editorialReadAction")}
