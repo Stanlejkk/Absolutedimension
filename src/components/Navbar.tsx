@@ -268,17 +268,19 @@ export default function Navbar() {
 }
 
 function Logo({ invert = false }: { invert?: boolean }) {
-  // No `transition` utility here on purpose — Tailwind's default transition
-  // includes `filter`, and crossfading between "no filter" and `invert(1)`
-  // produces a brief green/pink flash on first paint while the image
-  // decodes. A hard switch keeps the logo clean.
+  // The source PNG isn't pure white — it carries warm tones, so CSS
+  // `invert(1)` shifts the hue to a blueish-green that reads as a
+  // coloured logo on light pages. `brightness(0)` collapses every
+  // opaque pixel to pure black while keeping the transparent canvas,
+  // giving a clean ink-coloured mark on the bone body without any
+  // filter-based flashes.
   return (
     <img
       src="https://www.absolutdimension.com/cdn/shop/files/logo_www_transparent.png?v=1760455149&width=400"
       alt="Absolut Dimension"
       width={400}
       height={69}
-      className={`h-6 md:h-7 w-auto ${invert ? "invert" : ""}`}
+      className={`h-6 md:h-7 w-auto ${invert ? "brightness-0" : ""}`}
     />
   );
 }
