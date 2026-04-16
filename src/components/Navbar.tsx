@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 const links = [
-  { label: "New", href: "#featured" },
-  { label: "Collections", href: "#collections" },
-  { label: "Atelier", href: "#story" },
-  { label: "Editorial", href: "#editorial" },
-  { label: "Contact", href: "#footer" },
+  { label: "Shop", to: "/shop" },
+  { label: "Collections", to: "/collections" },
+  { label: "Atelier", to: "/about" },
+  { label: "Editorial", to: "/blog" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -19,6 +20,11 @@ export default function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Close the mobile drawer whenever the route changes
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   return (
     <motion.header
@@ -30,21 +36,33 @@ export default function Navbar() {
       }`}
     >
       <nav className="container-x flex h-16 md:h-20 items-center justify-between">
-        <a href="#top" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <Logo />
           <span className="sr-only">Absolut Dimension</span>
-        </a>
+        </Link>
 
         <ul className="hidden md:flex items-center gap-8">
           {links.map((l) => (
-            <li key={l.href}>
-              <a
-                href={l.href}
-                className="group relative text-sm tracking-wide text-ink/80 hover:text-ink transition-colors"
+            <li key={l.to}>
+              <NavLink
+                to={l.to}
+                className={({ isActive }) =>
+                  `group relative text-sm tracking-wide transition-colors ${
+                    isActive ? "text-ink" : "text-ink/80 hover:text-ink"
+                  }`
+                }
               >
-                {l.label}
-                <span className="absolute -bottom-1 left-0 h-px w-0 bg-ink transition-all duration-500 group-hover:w-full" />
-              </a>
+                {({ isActive }) => (
+                  <>
+                    {l.label}
+                    <span
+                      className={`absolute -bottom-1 left-0 h-px bg-ink transition-all duration-500 ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </>
+                )}
+              </NavLink>
             </li>
           ))}
         </ul>
@@ -59,15 +77,13 @@ export default function Navbar() {
           >
             <SearchIcon />
           </button>
-          <button
-            aria-label="Cart"
+          <Link
+            to="/shop"
+            aria-label="Shop"
             className="relative grid place-items-center h-9 w-9 rounded-full hover:bg-ink/5 transition"
           >
             <BagIcon />
-            <span className="absolute -top-0.5 -right-0.5 grid place-items-center h-4 w-4 rounded-full bg-ink text-bone text-[10px] font-medium">
-              0
-            </span>
-          </button>
+          </Link>
           <button
             aria-label="Menu"
             onClick={() => setOpen((v) => !v)}
@@ -90,18 +106,14 @@ export default function Navbar() {
             <ul className="container-x py-6 space-y-4">
               {links.map((l, i) => (
                 <motion.li
-                  key={l.href}
+                  key={l.to}
                   initial={{ y: 8, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.05 * i, duration: 0.4 }}
                 >
-                  <a
-                    href={l.href}
-                    onClick={() => setOpen(false)}
-                    className="block font-display text-3xl"
-                  >
+                  <Link to={l.to} className="block font-display text-3xl">
                     {l.label}
-                  </a>
+                  </Link>
                 </motion.li>
               ))}
             </ul>
@@ -169,7 +181,7 @@ function MenuIcon({ open }: { open: boolean }) {
         strokeLinecap="round"
       />
       <motion.path
-        animate={{ d: open ? "M18 6l-12 12" : "M4 16h16", opacity: open ? 1 : 1 }}
+        animate={{ d: open ? "M18 6l-12 12" : "M4 16h16" }}
         transition={{ duration: 0.3 }}
         strokeLinecap="round"
       />

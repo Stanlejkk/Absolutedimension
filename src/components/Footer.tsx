@@ -1,21 +1,31 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { collections, categoryLabels } from "../lib/data";
 
-const columns = [
-  {
-    title: "Shop",
-    items: ["New arrivals", "Dresses", "Tops", "Trousers", "Coats", "Archive"],
-  },
-  {
-    title: "House",
-    items: ["Atelier", "Sustainability", "Made in Poland", "Editorial", "Press"],
-  },
-  {
-    title: "Care",
-    items: ["Contact", "Shipping", "Returns", "Size guide", "Garment care"],
-  },
+const careLinks = [
+  { label: "Contact", to: "/about" },
+  { label: "Shipping", to: "/about" },
+  { label: "Returns", to: "/about" },
+  { label: "Size guide", to: "/about" },
+  { label: "Garment care", to: "/about" },
 ];
 
+const houseLinks = [
+  { label: "Atelier", to: "/about" },
+  { label: "Sustainability", to: "/about" },
+  { label: "Made in Poland", to: "/about" },
+  { label: "Editorial", to: "/blog" },
+];
+
+// A short, curated set of category links for the footer
+const shopCategoryKeys = ["dress", "coat", "top", "skirt", "set", "blazer"] as const;
+
 export default function Footer() {
+  const shopLinks = [
+    { label: "New arrivals", to: "/shop?view=new" },
+    ...shopCategoryKeys.map((k) => ({ label: categoryLabels[k], to: `/shop?cat=${k}` })),
+  ];
+
   return (
     <footer id="footer" className="relative bg-ink text-bone overflow-hidden">
       <div className="container-x pt-20 pb-10">
@@ -45,26 +55,73 @@ export default function Footer() {
                 </a>
               ))}
             </div>
+
+            <div className="mt-10 grid grid-cols-2 gap-4 max-w-sm">
+              {collections.slice(0, 4).map((c) => (
+                <Link
+                  key={c.slug}
+                  to={`/collections/${c.slug}`}
+                  className="text-xs tracking-wide text-bone/70 hover:text-bone transition-colors"
+                >
+                  → {c.name}
+                </Link>
+              ))}
+            </div>
           </div>
 
           <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
-            {columns.map((col) => (
-              <div key={col.title}>
-                <p className="eyebrow text-bone/60 mb-4">{col.title}</p>
-                <ul className="space-y-2.5">
-                  {col.items.map((item) => (
-                    <li key={item}>
-                      <a
-                        href="#"
-                        className="text-sm text-bone/80 hover:text-bone transition-colors"
-                      >
-                        {item}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            <div>
+              <p className="eyebrow text-bone/60 mb-4">Shop</p>
+              <ul className="space-y-2.5">
+                {shopLinks.map((l) => (
+                  <li key={l.label}>
+                    <Link
+                      to={l.to}
+                      className="text-sm text-bone/80 hover:text-bone transition-colors"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link to="/shop" className="text-sm text-bone italic hover:text-gold transition-colors">
+                    All pieces
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="eyebrow text-bone/60 mb-4">House</p>
+              <ul className="space-y-2.5">
+                {houseLinks.map((l) => (
+                  <li key={l.label}>
+                    <Link
+                      to={l.to}
+                      className="text-sm text-bone/80 hover:text-bone transition-colors"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <p className="eyebrow text-bone/60 mb-4">Care</p>
+              <ul className="space-y-2.5">
+                {careLinks.map((l) => (
+                  <li key={l.label}>
+                    <Link
+                      to={l.to}
+                      className="text-sm text-bone/80 hover:text-bone transition-colors"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </motion.div>
 
