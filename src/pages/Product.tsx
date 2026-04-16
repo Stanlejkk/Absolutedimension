@@ -9,12 +9,14 @@ import {
 } from "../lib/useCatalog";
 import ProductCard from "../components/ProductCard";
 import { useLocale } from "../i18n";
+import { useCart } from "../lib/CartContext";
 
 export default function Product() {
   const { id } = useParams<{ id: string }>();
   const product = useProduct(id);
   const { t } = useLocale();
   const formatPrice = useFormatPrice();
+  const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [added, setAdded] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
@@ -39,7 +41,14 @@ export default function Product() {
   const related = collectionProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
   const handleAdd = () => {
-    if (!selectedSize) return;
+    if (!selectedSize || !product) return;
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      size: selectedSize,
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 2400);
   };

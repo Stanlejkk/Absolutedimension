@@ -12,7 +12,48 @@ export const en = {
     searchAria: "Search",
     menuAria: "Menu",
     shopAria: "Shop",
+    bagAria: "Bag",
     switchLanguageAria: "Switch language",
+  },
+
+  cart: {
+    title: "Your bag",
+    empty: "Your bag is empty.",
+    emptyBody: "Add a piece from the wardrobe — every garment is kept for you once it lands here.",
+    continueShopping: "Continue shopping",
+    sizeLabel: "Size",
+    quantityLabel: "Quantity",
+    remove: "Remove",
+    increase: "Increase quantity",
+    decrease: "Decrease quantity",
+    subtotal: "Subtotal",
+    shippingNote: "Shipping and duties calculated at checkout.",
+    checkout: "Checkout",
+    viewBag: "View bag",
+    addedToast: "Added to bag",
+    closeAria: "Close bag",
+    itemsCount: {
+      one: "{count} item",
+      other: "{count} items",
+    },
+    lineTotalAria: "Line total",
+  },
+
+  checkout: {
+    title: "Checkout",
+    summary: "Order summary",
+    payWithStripe: "Pay with Stripe",
+    preparing: "Preparing your secure checkout…",
+    comingSoon: "Stripe checkout is coming soon",
+    comingSoonBody:
+      "We are finalising the secure payment integration. In the meantime, write to atelier@absolutdimension.com and we will arrange your order by correspondence.",
+    errorTitle: "Checkout could not start",
+    errorBody: "Something went wrong on our side. Please try again in a moment.",
+    backToBag: "Back to bag",
+    emptyTitle: "Your bag is empty",
+    emptyBody: "There is nothing to check out yet. Add a piece from the wardrobe first.",
+    browseShop: "Browse the shop",
+    total: "Total",
   },
 
   hero: {

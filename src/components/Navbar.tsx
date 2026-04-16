@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "../i18n";
+import { useCart } from "../lib/CartContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const { t, locale, toggle } = useLocale();
+  const { count: cartCount, openCart } = useCart();
 
   const links = useMemo(
     () => [
@@ -91,13 +93,22 @@ export default function Navbar() {
           >
             <SearchIcon />
           </button>
-          <Link
-            to="/shop"
-            aria-label={t("nav.shopAria")}
+          <button
+            type="button"
+            onClick={openCart}
+            aria-label={t("nav.bagAria")}
             className="relative grid place-items-center h-9 w-9 rounded-full text-bone hover:bg-bone/10 transition"
           >
             <BagIcon />
-          </Link>
+            {cartCount > 0 && (
+              <span
+                aria-hidden="true"
+                className="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-gold text-ink text-[10px] font-medium leading-none grid place-items-center tabular-nums"
+              >
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
+          </button>
           <button
             aria-label={t("nav.menuAria")}
             onClick={() => setOpen((v) => !v)}
