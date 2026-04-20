@@ -1,10 +1,12 @@
 /**
  * Locale-resolved catalog hooks.
  *
- * The raw catalog in ./data.ts carries `LocalizedString` on every translated
- * field. Components never want to deal with that — they want a plain object
- * with `description: string` for the current locale. These hooks do that
- * resolution once per render, memoised against the locale.
+ * The raw catalog is held in `CatalogContext` — it starts from the bundled
+ * seed in ./data.ts and is replaced by live Supabase data once it loads. Each
+ * entry carries `LocalizedString` on every translated field. Components never
+ * want to deal with that — they want a plain object with `description: string`
+ * for the current locale. These hooks do that resolution once per render,
+ * memoised against the locale + live catalog state.
  *
  * Pattern:
  *   const products = useProducts();      // Product[]  (with plain-string fields)
@@ -15,17 +17,15 @@
 import { useMemo } from "react";
 import { useLocale } from "../i18n";
 import {
-  blogPosts as blogPostsSource,
   categoryLabels as categoryLabelsSource,
-  collections as collectionsSource,
   formatPrice,
-  products as productsSource,
   type BlogBlock,
   type BlogPost as BlogPostSource,
   type Collection as CollectionSource,
   type Product as ProductSource,
   type ProductCategory,
 } from "./data";
+import { useCatalogState } from "./CatalogContext";
 
 /* ─── Resolved types (plain strings for translated fields) ────────────────── */
 
@@ -92,74 +92,83 @@ function resolveBlogPost(
 
 export function useProducts(): ResolvedProduct[] {
   const { pick, locale } = useLocale();
-  return useMemo(() => productsSource.map((p) => resolveProduct(p, pick)), [pick, locale]);
+  const { products } = useCatalogState();
+  return useMemo(() => products.map((p) => resolveProduct(p, pick)), [products, pick, locale]);
 }
 
 export function useProduct(id: string | undefined): ResolvedProduct | undefined {
   const { pick, locale } = useLocale();
+  const { products } = useCatalogState();
   return useMemo(() => {
     if (!id) return undefined;
-    const p = productsSource.find((x) => x.id === id);
+    const p = products.find((x) => x.id === id);
     return p ? resolveProduct(p, pick) : undefined;
-  }, [id, pick, locale]);
+  }, [id, products, pick, locale]);
 }
 
 export function useProductsByCollection(slug: string | undefined): ResolvedProduct[] {
   const { pick, locale } = useLocale();
+  const { products } = useCatalogState();
   return useMemo(() => {
     if (!slug) return [];
-    return productsSource.filter((p) => p.collection === slug).map((p) => resolveProduct(p, pick));
-  }, [slug, pick, locale]);
+    return products.filter((p) => p.collection === slug).map((p) => resolveProduct(p, pick));
+  }, [slug, products, pick, locale]);
 }
 
 export function useFeaturedProducts(): ResolvedProduct[] {
   const { pick, locale } = useLocale();
+  const { products } = useCatalogState();
   return useMemo(
-    () => productsSource.filter((p) => p.featured).map((p) => resolveProduct(p, pick)),
-    [pick, locale],
+    () => products.filter((p) => p.featured).map((p) => resolveProduct(p, pick)),
+    [products, pick, locale],
   );
 }
 
 export function useNewArrivals(): ResolvedProduct[] {
   const { pick, locale } = useLocale();
+  const { products } = useCatalogState();
   return useMemo(
-    () => productsSource.filter((p) => p.newArrival).map((p) => resolveProduct(p, pick)),
-    [pick, locale],
+    () => products.filter((p) => p.newArrival).map((p) => resolveProduct(p, pick)),
+    [products, pick, locale],
   );
 }
 
 export function useCollections(): ResolvedCollection[] {
   const { pick, locale } = useLocale();
+  const { collections } = useCatalogState();
   return useMemo(
-    () => collectionsSource.map((c) => resolveCollection(c, pick)),
-    [pick, locale],
+    () => collections.map((c) => resolveCollection(c, pick)),
+    [collections, pick, locale],
   );
 }
 
 export function useCollection(slug: string | undefined): ResolvedCollection | undefined {
   const { pick, locale } = useLocale();
+  const { collections } = useCatalogState();
   return useMemo(() => {
     if (!slug) return undefined;
-    const c = collectionsSource.find((x) => x.slug === slug);
+    const c = collections.find((x) => x.slug === slug);
     return c ? resolveCollection(c, pick) : undefined;
-  }, [slug, pick, locale]);
+  }, [slug, collections, pick, locale]);
 }
 
 export function useBlogPosts(): ResolvedBlogPost[] {
   const { pick, locale } = useLocale();
+  const { blogPosts } = useCatalogState();
   return useMemo(
-    () => blogPostsSource.map((b) => resolveBlogPost(b, pick)),
-    [pick, locale],
+    () => blogPosts.map((b) => resolveBlogPost(b, pick)),
+    [blogPosts, pick, locale],
   );
 }
 
 export function useBlogPost(slug: string | undefined): ResolvedBlogPost | undefined {
   const { pick, locale } = useLocale();
+  const { blogPosts } = useCatalogState();
   return useMemo(() => {
     if (!slug) return undefined;
-    const b = blogPostsSource.find((x) => x.slug === slug);
+    const b = blogPosts.find((x) => x.slug === slug);
     return b ? resolveBlogPost(b, pick) : undefined;
-  }, [slug, pick, locale]);
+  }, [slug, blogPosts, pick, locale]);
 }
 
 export function useCategoryLabels(): Record<ProductCategory, string> {
