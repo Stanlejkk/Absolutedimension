@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { useCollections } from "../lib/useCatalog";
+import { useCollections, useProducts } from "../lib/useCatalog";
 import { useLocale } from "../i18n";
-import { products } from "../lib/data";
 
 export default function CollectionsIndex() {
   const collections = useCollections();
+  const products = useProducts();
   const { t, plural } = useLocale();
 
   return (

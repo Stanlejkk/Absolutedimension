@@ -38,3 +38,35 @@ Because `npm run build` outputs a static `dist/` directory, any static host work
 ### Recommendation
 
 Use **Vercel** or **Cloudflare Pages** for the fastest path: connect this GitHub repo, accept the detected Vite defaults (build `npm run build`, output `dist`), and every push to `main` will deploy automatically.
+
+## Supabase backend
+
+Products, collections, blog posts and user accounts can be backed by
+[Supabase](https://supabase.com/). When `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_ANON_KEY` are defined at build time, the app reads its catalog
+from the `products`, `collections`, and `blog_posts` tables, and auth is
+delegated to Supabase Auth. Without those env vars the site still renders the
+bundled seed catalog and keeps accounts in `localStorage`.
+
+### One-time setup
+
+1. Create a new project at [app.supabase.com](https://app.supabase.com/).
+2. In the SQL editor, run [`supabase/schema.sql`](supabase/schema.sql) to create
+   tables, RLS policies and the `auth.users → public.profiles` trigger.
+3. Regenerate and apply the seed:
+
+   ```bash
+   npx tsx supabase/seed.ts > supabase/seed.sql
+   # then paste into the SQL editor, or pipe via supabase CLI
+   ```
+
+4. Copy `.env.example` to `.env.local` and fill in:
+
+   ```bash
+   VITE_SUPABASE_URL=https://<project>.supabase.co
+   VITE_SUPABASE_ANON_KEY=<anon-public-key>
+   VITE_ADMIN_INVITE_CODE=<your-atelier-code>
+   ```
+
+5. Create the first admin by registering with the invite code. Subsequent
+   admins can be added the same way.

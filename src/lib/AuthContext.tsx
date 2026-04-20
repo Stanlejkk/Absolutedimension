@@ -4,18 +4,22 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 
+import { isSupabaseConfigured, supabase, type ProfileRow } from "./supabase";
+
 /**
- * Client-side account store.
+ * Account store.
  *
- * Absolut Dimension's public site is a static Vite build with no backend, so
- * accounts and sessions are persisted to localStorage. Passwords are hashed
- * with SubtleCrypto before storage. This is a front-end scaffold meant to be
- * swapped for a real identity provider (e.g. Supabase, Auth.js, Shopify
- * Customer API) when the storefront gains a server.
+ * When the Vite build is given `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`,
+ * auth is delegated to Supabase: registration calls `supabase.auth.signUp`, a
+ * database trigger mirrors the new auth user into `public.profiles`, and the
+ * atelier's admin directory reads from that same table. Without those env
+ * vars the provider keeps working against `localStorage` so the static preview
+ * builds and offline dev environments continue to function.
  *
  * Two roles are supported:
  *  - "client": a regular shopper account
@@ -32,9 +36,9 @@ export interface StoredAccount {
   name: string;
   email: string;
   role: UserRole;
-  /** Hex-encoded SHA-256 of `${salt}:${password}`. */
+  /** Hex-encoded SHA-256 of `${salt}:${password}`. Local-mode only. */
   passwordHash: string;
-  /** Hex-encoded random salt. */
+  /** Hex-encoded random salt. Local-mode only. */
   passwordSalt: string;
   createdAt: string;
 }
@@ -73,8 +77,8 @@ export interface AuthContextValue {
     email: string,
     password: string,
   ) => Promise<{ ok: true } | { ok: false; error: AuthError }>;
-  logout: () => void;
-  deleteAccount: (id: string) => boolean;
+  logout: () => Promise<void> | void;
+  deleteAccount: (id: string) => Promise<boolean> | boolean;
 }
 
 const ACCOUNTS_KEY = "ad.auth.accounts.v1";
@@ -86,8 +90,12 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 /* ------------------------------------------------------------------ utils */
 
-function toPublic(a: StoredAccount): PublicAccount {
+function toPublicFromLocal(a: StoredAccount): PublicAccount {
   return { id: a.id, name: a.name, email: a.email, role: a.role, createdAt: a.createdAt };
+}
+
+function toPublicFromRow(r: ProfileRow): PublicAccount {
+  return { id: r.id, name: r.name, email: r.email, role: r.role, createdAt: r.created_at };
 }
 
 function normaliseEmail(email: string): string {
@@ -178,6 +186,15 @@ function isStoredAccount(v: unknown): v is StoredAccount {
 /* --------------------------------------------------------------- provider */
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  if (isSupabaseConfigured) {
+    return <SupabaseAuthProvider>{children}</SupabaseAuthProvider>;
+  }
+  return <LocalAuthProvider>{children}</LocalAuthProvider>;
+}
+
+/* ─── Local (in-browser) provider ────────────────────────────────────────── */
+
+function LocalAuthProvider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState<StoredAccount[]>(readAccounts);
   const [sessionId, setSessionId] = useState<string | null>(readSession);
   const [isReady, setIsReady] = useState(false);
@@ -266,8 +283,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(() => {
     const current = sessionId ? accounts.find((a) => a.id === sessionId) ?? null : null;
     return {
-      user: current ? toPublic(current) : null,
-      accounts: accounts.map(toPublic),
+      user: current ? toPublicFromLocal(current) : null,
+      accounts: accounts.map(toPublicFromLocal),
       isReady,
       register,
       login,
@@ -275,6 +292,166 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       deleteAccount,
     };
   }, [accounts, sessionId, isReady, register, login, logout, deleteAccount]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+/* ─── Supabase provider ──────────────────────────────────────────────────── */
+
+function SupabaseAuthProvider({ children }: { children: ReactNode }) {
+  const client = supabase!;
+  const [user, setUser] = useState<PublicAccount | null>(null);
+  const [accounts, setAccounts] = useState<PublicAccount[]>([]);
+  const [isReady, setIsReady] = useState(false);
+  const userRef = useRef<PublicAccount | null>(null);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  const loadProfileForSession = useCallback(
+    async (userId: string | null) => {
+      if (!userId) {
+        setUser(null);
+        return;
+      }
+      const { data, error } = await client
+        .from("profiles")
+        .select("id, name, email, role, created_at")
+        .eq("id", userId)
+        .maybeSingle<ProfileRow>();
+      if (error || !data) {
+        setUser(null);
+        return;
+      }
+      setUser(toPublicFromRow(data));
+    },
+    [client],
+  );
+
+  const refreshAccounts = useCallback(
+    async (role: UserRole | undefined) => {
+      if (role !== "admin") {
+        setAccounts([]);
+        return;
+      }
+      const { data, error } = await client
+        .from("profiles")
+        .select("id, name, email, role, created_at")
+        .order("created_at", { ascending: false })
+        .returns<ProfileRow[]>();
+      if (error || !data) return;
+      setAccounts(data.map(toPublicFromRow));
+    },
+    [client],
+  );
+
+  // Bootstrap the session + subscribe to future auth changes.
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const { data } = await client.auth.getSession();
+      if (cancelled) return;
+      await loadProfileForSession(data.session?.user.id ?? null);
+      setIsReady(true);
+    })();
+
+    const { data: sub } = client.auth.onAuthStateChange(async (_event, session) => {
+      await loadProfileForSession(session?.user.id ?? null);
+    });
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, [client, loadProfileForSession]);
+
+  // Admins need the full directory; everyone else sees an empty list.
+  useEffect(() => {
+    refreshAccounts(user?.role);
+  }, [user?.role, refreshAccounts]);
+
+  const register = useCallback<AuthContextValue["register"]>(
+    async (input) => {
+      const name = input.name.trim();
+      const email = normaliseEmail(input.email);
+      if (!name) return { ok: false, error: "name-required" };
+      if (!isValidEmail(email)) return { ok: false, error: "invalid-email" };
+      if (!input.password || input.password.length < 8) {
+        return { ok: false, error: "weak-password" };
+      }
+      if (input.role === "admin" && input.adminInviteCode !== ADMIN_INVITE_CODE) {
+        return { ok: false, error: "invalid-admin-code" };
+      }
+
+      const { data, error } = await client.auth.signUp({
+        email,
+        password: input.password,
+        options: {
+          data: { name, role: input.role },
+        },
+      });
+
+      if (error) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes("registered") || msg.includes("exists")) {
+          return { ok: false, error: "email-taken" };
+        }
+        if (msg.includes("password")) return { ok: false, error: "weak-password" };
+        if (msg.includes("email")) return { ok: false, error: "invalid-email" };
+        return { ok: false, error: "unavailable" };
+      }
+
+      await loadProfileForSession(data.user?.id ?? null);
+      return { ok: true };
+    },
+    [client, loadProfileForSession],
+  );
+
+  const login = useCallback<AuthContextValue["login"]>(
+    async (emailInput, password) => {
+      const email = normaliseEmail(emailInput);
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error || !data.user) {
+        return { ok: false, error: "invalid-credentials" };
+      }
+      await loadProfileForSession(data.user.id);
+      return { ok: true };
+    },
+    [client, loadProfileForSession],
+  );
+
+  const logout = useCallback(async () => {
+    await client.auth.signOut();
+    setUser(null);
+    setAccounts([]);
+  }, [client]);
+
+  const deleteAccount = useCallback<AuthContextValue["deleteAccount"]>(
+    async (id) => {
+      // Removing the profile row cascades on the auth.users FK only from the
+      // server side (service-role). From the client we can at least drop the
+      // public profile — RLS allows admins to delete any row, and allows a
+      // user to delete their own. The auth.users record will be tidied up by
+      // a scheduled cleanup or admin SQL when needed.
+      const { error } = await client.from("profiles").delete().eq("id", id);
+      if (error) return false;
+
+      if (userRef.current?.id === id) {
+        await client.auth.signOut();
+        setUser(null);
+      }
+      setAccounts((prev) => prev.filter((a) => a.id !== id));
+      return true;
+    },
+    [client],
+  );
+
+  const value = useMemo<AuthContextValue>(
+    () => ({ user, accounts, isReady, register, login, logout, deleteAccount }),
+    [user, accounts, isReady, register, login, logout, deleteAccount],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -3,17 +3,18 @@ import { motion } from "framer-motion";
 import {
   useCollection,
   useCollections,
+  useProducts,
   useProductsByCollection,
 } from "../lib/useCatalog";
 import ProductCard from "../components/ProductCard";
 import { useLocale } from "../i18n";
-import { products } from "../lib/data";
 
 export default function Collection() {
   const { slug } = useParams<{ slug: string }>();
   const collection = useCollection(slug);
   const allCollections = useCollections();
   const pieces = useProductsByCollection(slug);
+  const allProducts = useProducts();
   const { t, plural } = useLocale();
 
   if (!collection) {
@@ -107,7 +108,7 @@ export default function Collection() {
         </div>
         <div className="grid md:grid-cols-3 gap-6 md:gap-8">
           {others.map((c) => {
-            const cPieceCount = products.filter((p) => p.collection === c.slug).length;
+            const cPieceCount = allProducts.filter((p) => p.collection === c.slug).length;
             const cPieceLabel = t(
               `collections.pieceCount.${plural(cPieceCount)}` as "collections.pieceCount.other",
               { count: cPieceCount },
