@@ -20,7 +20,7 @@ export default function FeaturedProducts() {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
             <p className="eyebrow mb-4">{t("sections.featuredEyebrow")}</p>
-            <h2 className="font-display text-5xl md:text-7xl font-light leading-[1]">
+            <h2 className="font-display italic text-5xl md:text-7xl font-light leading-[0.98] tracking-[-0.02em]">
               {t("sections.featuredTitle")}
             </h2>
           </motion.div>
