@@ -174,3 +174,211 @@ create policy "Update own profile" on public.profiles
 drop policy if exists "Admin delete profile" on public.profiles;
 create policy "Admin delete profile" on public.profiles
   for delete using (public.is_admin());
+
+-- ─── Shop: orders ──────────────────────────────────────────────────────────
+-- Case-insensitive email comparison for subscribers + guest checkout.
+create extension if not exists citext;
+
+do $$ begin
+  create type order_status as enum
+    ('pending', 'paid', 'fulfilled', 'shipped', 'refunded', 'canceled');
+exception when duplicate_object then null;
+end $$;
+
+create table if not exists public.orders (
+  id                      uuid primary key default gen_random_uuid(),
+  stripe_session_id       text not null unique,
+  stripe_payment_intent   text,
+  user_id                 uuid references auth.users(id) on delete set null,
+  email                   citext not null,
+  amount                  integer not null check (amount >= 0),
+  currency                text not null default 'pln',
+  status                  order_status not null default 'pending',
+  shipping                jsonb,
+  locale                  text not null default 'pl',
+  tracking_number         text,
+  notes                   text,
+  created_at              timestamptz not null default now(),
+  updated_at              timestamptz not null default now()
+);
+
+create index if not exists orders_user_id_idx on public.orders (user_id);
+create index if not exists orders_email_idx on public.orders (email);
+create index if not exists orders_status_idx on public.orders (status);
+create index if not exists orders_created_at_idx on public.orders (created_at desc);
+
+create table if not exists public.order_items (
+  id           uuid primary key default gen_random_uuid(),
+  order_id     uuid not null references public.orders(id) on delete cascade,
+  product_id   text references public.products(id) on delete set null,
+  name         text not null,
+  size         text not null default '',
+  quantity     integer not null check (quantity > 0),
+  unit_amount  integer not null check (unit_amount >= 0),
+  image        text not null default ''
+);
+
+create index if not exists order_items_order_id_idx on public.order_items (order_id);
+
+alter table public.orders      enable row level security;
+alter table public.order_items enable row level security;
+
+drop policy if exists "Own or admin read orders" on public.orders;
+create policy "Own or admin read orders" on public.orders
+  for select using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "Admins update orders" on public.orders;
+create policy "Admins update orders" on public.orders
+  for update using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "Admins delete orders" on public.orders;
+create policy "Admins delete orders" on public.orders
+  for delete using (public.is_admin());
+
+-- Inserts happen via the service-role key in the Stripe webhook, which bypasses
+-- RLS, so no insert policy is needed here.
+
+drop policy if exists "Read order items via order" on public.order_items;
+create policy "Read order items via order" on public.order_items
+  for select using (
+    exists (
+      select 1 from public.orders o
+      where o.id = order_items.order_id
+        and (o.user_id = auth.uid() or public.is_admin())
+    )
+  );
+
+drop policy if exists "Admins mutate order items" on public.order_items;
+create policy "Admins mutate order items" on public.order_items
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- Keep updated_at fresh whenever admins change an order.
+create or replace function public.touch_orders_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists orders_touch_updated_at on public.orders;
+create trigger orders_touch_updated_at
+  before update on public.orders
+  for each row execute function public.touch_orders_updated_at();
+
+-- ─── Newsletter: subscribers ───────────────────────────────────────────────
+
+do $$ begin
+  create type subscriber_status as enum ('pending', 'confirmed', 'unsubscribed');
+exception when duplicate_object then null;
+end $$;
+
+create table if not exists public.newsletter_subscribers (
+  id                  uuid primary key default gen_random_uuid(),
+  email               citext not null unique,
+  locale              text not null default 'pl',
+  status              subscriber_status not null default 'pending',
+  confirm_token       uuid,
+  unsubscribe_token   uuid not null default gen_random_uuid(),
+  confirmed_at        timestamptz,
+  created_at          timestamptz not null default now()
+);
+
+create index if not exists newsletter_subscribers_status_idx
+  on public.newsletter_subscribers (status);
+create index if not exists newsletter_subscribers_confirm_token_idx
+  on public.newsletter_subscribers (confirm_token);
+create index if not exists newsletter_subscribers_unsubscribe_token_idx
+  on public.newsletter_subscribers (unsubscribe_token);
+
+alter table public.newsletter_subscribers enable row level security;
+
+-- Anyone can subscribe (the form is public). The row lands in 'pending' and
+-- is only promoted to 'confirmed' by the server (service-role) once the
+-- double-opt-in link is clicked.
+drop policy if exists "Anyone can subscribe" on public.newsletter_subscribers;
+create policy "Anyone can subscribe" on public.newsletter_subscribers
+  for insert with check (status = 'pending');
+
+drop policy if exists "Admins read subscribers" on public.newsletter_subscribers;
+create policy "Admins read subscribers" on public.newsletter_subscribers
+  for select using (public.is_admin());
+
+drop policy if exists "Admins mutate subscribers" on public.newsletter_subscribers;
+create policy "Admins mutate subscribers" on public.newsletter_subscribers
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- ─── Newsletter: campaigns ─────────────────────────────────────────────────
+
+do $$ begin
+  create type campaign_status as enum ('draft', 'sending', 'sent');
+exception when duplicate_object then null;
+end $$;
+
+create table if not exists public.newsletter_campaigns (
+  id              uuid primary key default gen_random_uuid(),
+  subject_en      text not null default '',
+  subject_pl      text not null default '',
+  body_en         text not null default '',
+  body_pl         text not null default '',
+  status          campaign_status not null default 'draft',
+  sent_at         timestamptz,
+  sent_to_count   integer not null default 0,
+  created_by      uuid references auth.users(id) on delete set null,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+
+create index if not exists newsletter_campaigns_created_at_idx
+  on public.newsletter_campaigns (created_at desc);
+
+alter table public.newsletter_campaigns enable row level security;
+
+drop policy if exists "Admins read campaigns" on public.newsletter_campaigns;
+create policy "Admins read campaigns" on public.newsletter_campaigns
+  for select using (public.is_admin());
+
+drop policy if exists "Admins mutate campaigns" on public.newsletter_campaigns;
+create policy "Admins mutate campaigns" on public.newsletter_campaigns
+  for all using (public.is_admin()) with check (public.is_admin());
+
+create or replace function public.touch_campaigns_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists campaigns_touch_updated_at on public.newsletter_campaigns;
+create trigger campaigns_touch_updated_at
+  before update on public.newsletter_campaigns
+  for each row execute function public.touch_campaigns_updated_at();
+
+-- ─── Storage: product images ───────────────────────────────────────────────
+-- Public-read bucket so admin-uploaded product images are served directly by
+-- the catalog; admin-only write so random visitors cannot upload blobs.
+insert into storage.buckets (id, name, public)
+values ('product-images', 'product-images', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Public read product images" on storage.objects;
+create policy "Public read product images" on storage.objects
+  for select using (bucket_id = 'product-images');
+
+drop policy if exists "Admins write product images" on storage.objects;
+create policy "Admins write product images" on storage.objects
+  for insert with check (bucket_id = 'product-images' and public.is_admin());
+
+drop policy if exists "Admins update product images" on storage.objects;
+create policy "Admins update product images" on storage.objects
+  for update using (bucket_id = 'product-images' and public.is_admin())
+  with check (bucket_id = 'product-images' and public.is_admin());
+
+drop policy if exists "Admins delete product images" on storage.objects;
+create policy "Admins delete product images" on storage.objects
+  for delete using (bucket_id = 'product-images' and public.is_admin());

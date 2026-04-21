@@ -38,7 +38,8 @@ export type CheckoutResult =
   | { status: "pending"; reason: "unconfigured" }
   | { status: "error"; message: string };
 
-const CHECKOUT_URL = import.meta.env.VITE_STRIPE_CHECKOUT_URL as string | undefined;
+const CHECKOUT_URL =
+  (import.meta.env.VITE_STRIPE_CHECKOUT_URL as string | undefined) ?? "/api/checkout";
 
 export function toCheckoutLineItems(items: CartItem[]): CheckoutLineItem[] {
   return items.map((i) => ({
@@ -91,4 +92,8 @@ export async function initiateCheckout(
 
 export function isCheckoutConfigured(): boolean {
   return Boolean(CHECKOUT_URL);
+}
+
+export function getCheckoutUrl(): string {
+  return CHECKOUT_URL;
 }
