@@ -28,6 +28,8 @@ export interface CartItem {
   image: string;
   size: string;
   quantity: number;
+  /** Snapshot of available stock at add time. Used to clamp quantity edits. */
+  stockLimit?: number;
 }
 
 export interface CartContextValue {
@@ -74,8 +76,15 @@ function isCartItem(v: unknown): v is CartItem {
     typeof o.image === "string" &&
     typeof o.size === "string" &&
     typeof o.quantity === "number" &&
-    o.quantity > 0
+    o.quantity > 0 &&
+    (o.stockLimit === undefined || typeof o.stockLimit === "number")
   );
+}
+
+function clampQty(desired: number, stockLimit: number | undefined): number {
+  const n = Math.max(1, Math.floor(desired));
+  if (typeof stockLimit !== "number") return n;
+  return Math.min(n, Math.max(0, stockLimit));
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -95,12 +104,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem: CartContextValue["addItem"] = useCallback((input) => {
     const quantity = Math.max(1, input.quantity ?? 1);
+    const stockLimit = input.stockLimit;
     const key = makeKey(input.productId, input.size);
     setItems((prev) => {
       const existing = prev.find((i) => i.key === key);
       if (existing) {
+        const mergedLimit = stockLimit ?? existing.stockLimit;
         return prev.map((i) =>
-          i.key === key ? { ...i, quantity: i.quantity + quantity } : i,
+          i.key === key
+            ? {
+                ...i,
+                stockLimit: mergedLimit,
+                quantity: clampQty(i.quantity + quantity, mergedLimit),
+              }
+            : i,
         );
       }
       return [
@@ -112,7 +129,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
           price: input.price,
           image: input.image,
           size: input.size,
-          quantity,
+          quantity: clampQty(quantity, stockLimit),
+          stockLimit,
         },
       ];
     });
@@ -126,7 +144,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const setQuantity = useCallback((key: string, quantity: number) => {
     setItems((prev) => {
       if (quantity <= 0) return prev.filter((i) => i.key !== key);
-      return prev.map((i) => (i.key === key ? { ...i, quantity } : i));
+      return prev.map((i) =>
+        i.key === key ? { ...i, quantity: clampQty(quantity, i.stockLimit) } : i,
+      );
     });
   }, []);
 

@@ -60,6 +60,7 @@ function productFromRow(r: ProductRow): Product {
     sizes: r.sizes ?? [],
     featured: r.featured || undefined,
     newArrival: r.new_arrival || undefined,
+    stockQuantity: typeof r.stock_quantity === "number" ? r.stock_quantity : undefined,
   };
 }
 

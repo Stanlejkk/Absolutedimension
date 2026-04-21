@@ -45,6 +45,8 @@ export interface Product {
   sizes: string[];
   featured?: boolean;
   newArrival?: boolean;
+  /** Remaining inventory. `undefined` means unknown (seed fallback); treated as in-stock. */
+  stockQuantity?: number;
 }
 
 export interface BlogPost {

@@ -41,6 +41,7 @@ export interface ProductRow {
   sizes: string[];
   featured: boolean;
   new_arrival: boolean;
+  stock_quantity: number;
 }
 
 export interface CollectionRow {

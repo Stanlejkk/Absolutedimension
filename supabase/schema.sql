@@ -44,13 +44,35 @@ create table if not exists public.products (
   sizes           text[] not null default '{}',
   featured        boolean not null default false,
   new_arrival     boolean not null default false,
+  stock_quantity  integer not null default 0 check (stock_quantity >= 0),
   created_at      timestamptz not null default now()
 );
+
+-- Idempotent: add stock_quantity to existing databases that were created
+-- before the column was introduced.
+alter table public.products
+  add column if not exists stock_quantity integer not null default 0
+  check (stock_quantity >= 0);
 
 create index if not exists products_collection_idx on public.products (collection);
 create index if not exists products_category_idx on public.products (category);
 create index if not exists products_featured_idx on public.products (featured) where featured;
 create index if not exists products_new_arrival_idx on public.products (new_arrival) where new_arrival;
+create index if not exists products_stock_idx on public.products (stock_quantity);
+
+-- Server-authoritative stock decrement. Called by the Stripe webhook once a
+-- paid order has been persisted. `greatest(0, …)` guards against going
+-- negative if two concurrent payments race past the checkout-time stock check.
+create or replace function public.decrement_stock(p_id text, qty integer)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.products
+    set stock_quantity = greatest(0, stock_quantity - qty)
+    where id = p_id;
+$$;
 
 -- ─── Blog posts ────────────────────────────────────────────────────────────
 

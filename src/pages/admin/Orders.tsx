@@ -116,6 +116,7 @@ function OrderDetailView({ id }: { id: string }) {
   const [tracking, setTracking] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [refunding, setRefunding] = useState(false);
 
   const load = useMemo(
     () => async () => {
@@ -158,6 +159,37 @@ function OrderDetailView({ id }: { id: string }) {
     push({ title: t("adminPanel.orders.savedToast"), kind: "success" });
     await load();
   }
+
+  async function handleRefund() {
+    if (!supabase || !order) return;
+    if (!window.confirm(t("adminPanel.orders.refundConfirm"))) return;
+    setRefunding(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("no-session");
+      const res = await fetch("/api/admin/refund", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      push({ title: t("adminPanel.orders.refundingToast"), kind: "success" });
+      await load();
+    } catch (err) {
+      console.error("refund failed", err);
+      push({ title: t("adminPanel.orders.refundFailed"), kind: "info" });
+    } finally {
+      setRefunding(false);
+    }
+  }
+
+  const canRefund =
+    !!order?.stripe_payment_intent &&
+    (order.status === "paid" || order.status === "fulfilled" || order.status === "shipped");
 
   if (!order) return <p className="text-muted">{t("common.loading")}</p>;
 
@@ -283,6 +315,16 @@ function OrderDetailView({ id }: { id: string }) {
           >
             {saving ? t("adminPanel.products.saving") : t("adminPanel.orders.save")}
           </button>
+          {canRefund ? (
+            <button
+              type="button"
+              onClick={handleRefund}
+              disabled={refunding}
+              className="w-full inline-flex items-center justify-center rounded-full border border-[#9a4a3a] text-[#9a4a3a] px-6 py-2.5 text-xs tracking-wider2 uppercase hover:bg-[#9a4a3a] hover:text-bone disabled:opacity-60 transition-colors"
+            >
+              {t("adminPanel.orders.refund")}
+            </button>
+          ) : null}
           {order.stripe_payment_intent ? (
             <a
               href={`https://dashboard.stripe.com/payments/${order.stripe_payment_intent}`}

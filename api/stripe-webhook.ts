@@ -16,6 +16,7 @@ import type Stripe from "stripe";
 import { getStripe } from "./_lib/stripe";
 import { getSupabaseAdmin } from "./_lib/supabaseAdmin";
 import { requiredEnv } from "./_lib/env";
+import { getResend, getFromAddress, orderReceiptEmail } from "./_lib/resend";
 
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== "POST") {
@@ -150,6 +151,47 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session): Promise
     if (itemsInsert.error) {
       throw new Error(`order_items insert failed: ${itemsInsert.error.message}`);
     }
+  }
+
+  // Decrement stock for each known product. Failures here are logged but not
+  // thrown — the order is already paid and persisted; Stripe should not retry.
+  for (const row of rows) {
+    if (!row.product_id) continue;
+    const dec = await supabase.rpc("decrement_stock", {
+      p_id: row.product_id,
+      qty: row.quantity,
+    });
+    if (dec.error) {
+      console.error("stripe-webhook: decrement_stock", row.product_id, dec.error);
+    }
+  }
+
+  // Fire-and-forget receipt email. Never throw: the order exists and Stripe
+  // must not retry (which would double-insert on a fresh deploy).
+  try {
+    const receipt = orderReceiptEmail({
+      orderId,
+      locale,
+      items: rows.map((r) => ({
+        name: r.name,
+        size: r.size,
+        quantity: r.quantity,
+        unit_amount: r.unit_amount,
+      })),
+      amount,
+      currency,
+      shipping,
+    });
+    const sent = await getResend().emails.send({
+      from: getFromAddress(),
+      to: email,
+      subject: receipt.subject,
+      html: receipt.html,
+      text: receipt.text,
+    });
+    if (sent.error) console.error("stripe-webhook: receipt", sent.error);
+  } catch (err) {
+    console.error("stripe-webhook: receipt threw", err);
   }
 }
 

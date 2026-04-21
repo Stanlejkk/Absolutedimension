@@ -34,6 +34,7 @@ interface FormState {
   description_pl: string;
   featured: boolean;
   new_arrival: boolean;
+  stock: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -48,6 +49,7 @@ const EMPTY_FORM: FormState = {
   description_pl: "",
   featured: false,
   new_arrival: false,
+  stock: "0",
 };
 
 export default function AdminProducts() {
@@ -106,6 +108,7 @@ export default function AdminProducts() {
       description_pl: p.description_pl,
       featured: p.featured,
       new_arrival: p.new_arrival,
+      stock: String(p.stock_quantity ?? 0),
     });
     setError(null);
     setShowForm(true);
@@ -127,6 +130,12 @@ export default function AdminProducts() {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
+      const stockQuantity = Math.max(0, Math.floor(Number(form.stock)));
+      if (!Number.isFinite(stockQuantity)) {
+        setError(t("adminPanel.products.errorSaving"));
+        setSaving(false);
+        return;
+      }
       const payload = {
         id: form.id,
         name: form.name,
@@ -139,6 +148,7 @@ export default function AdminProducts() {
         description_pl: form.description_pl,
         featured: form.featured,
         new_arrival: form.new_arrival,
+        stock_quantity: stockQuantity,
       };
       const res = editing
         ? await supabase.from("products").update(payload).eq("id", editing.id)
@@ -321,16 +331,32 @@ export default function AdminProducts() {
               uploadLabel={t("adminPanel.products.uploadImage")}
             />
 
-            <Field label={t("adminPanel.products.fieldSizes")}>
-              <input
-                value={form.sizes}
-                onChange={(e) => setForm({ ...form, sizes: e.target.value })}
-                className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
-              />
-              <p className="text-xs text-muted mt-1">
-                {t("adminPanel.products.fieldSizesHint")}
-              </p>
-            </Field>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label={t("adminPanel.products.fieldSizes")}>
+                <input
+                  value={form.sizes}
+                  onChange={(e) => setForm({ ...form, sizes: e.target.value })}
+                  className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
+                />
+                <p className="text-xs text-muted mt-1">
+                  {t("adminPanel.products.fieldSizesHint")}
+                </p>
+              </Field>
+              <Field label={t("adminPanel.products.fieldStock")}>
+                <input
+                  required
+                  type="number"
+                  step="1"
+                  min="0"
+                  value={form.stock}
+                  onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                  className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
+                />
+                <p className="text-xs text-muted mt-1">
+                  {t("adminPanel.products.fieldStockHint")}
+                </p>
+              </Field>
+            </div>
 
             <Field label={t("adminPanel.products.fieldDescriptionEn")}>
               <textarea

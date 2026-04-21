@@ -32,6 +32,7 @@ interface ProductRow {
   price: number;
   image: string;
   sizes: string[];
+  stock_quantity: number;
 }
 
 export default async function handler(req: Request): Promise<Response> {
@@ -66,7 +67,7 @@ export default async function handler(req: Request): Promise<Response> {
     const ids = Array.from(new Set(items.map((i) => i.productId)));
     const { data: products, error } = await supabase
       .from("products")
-      .select("id, name, price, image, sizes")
+      .select("id, name, price, image, sizes, stock_quantity")
       .in("id", ids)
       .returns<ProductRow[]>();
     if (error) {
@@ -75,11 +76,23 @@ export default async function handler(req: Request): Promise<Response> {
     }
     const byId = new Map<string, ProductRow>();
     for (const p of products ?? []) byId.set(p.id, p);
+
+    // Aggregate requested quantity per product (same product could appear as
+    // multiple size variants in the cart).
+    const requestedById = new Map<string, number>();
+    for (const item of items) {
+      requestedById.set(item.productId, (requestedById.get(item.productId) ?? 0) + item.quantity);
+    }
+
     for (const item of items) {
       const p = byId.get(item.productId);
       if (!p) return badRequest(`unknown-product:${item.productId}`);
       if (item.size && Array.isArray(p.sizes) && p.sizes.length > 0 && !p.sizes.includes(item.size)) {
         return badRequest(`invalid-size:${item.productId}`);
+      }
+      const wanted = requestedById.get(item.productId) ?? 0;
+      if (wanted > (p.stock_quantity ?? 0)) {
+        return badRequest(`out-of-stock:${item.productId}`);
       }
     }
 
