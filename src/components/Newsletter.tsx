@@ -4,6 +4,8 @@ import { useLocale } from "../i18n";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+type FormState = "idle" | "submitting" | "sent" | "error";
+
 /**
  * Newsletter — matches ad-home.jsx → Newsletter. A quiet centered block on
  * the bone body: eyebrow, 2-line italic title, body copy, and an underlined
@@ -11,8 +13,9 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  */
 export default function Newsletter() {
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const { t } = useLocale();
+  const [state, setState] = useState<FormState>("idle");
+  const { t, locale } = useLocale();
+  const sent = state === "sent";
 
   return (
     <section className="relative bg-bone border-t border-ink/10 py-28 md:py-36">
@@ -73,9 +76,21 @@ export default function Newsletter() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.9, delay: 0.5, ease: EASE }}
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            if (email) setSent(true);
+            if (!email || state === "submitting") return;
+            setState("submitting");
+            try {
+              const res = await fetch("/api/newsletter/subscribe", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ email, locale }),
+              });
+              if (res.ok) setState("sent");
+              else setState("error");
+            } catch {
+              setState("error");
+            }
           }}
           className="mt-11 max-w-[32.5rem] mx-auto"
         >
@@ -83,7 +98,7 @@ export default function Newsletter() {
             <input
               type="email"
               required
-              disabled={sent}
+              disabled={sent || state === "submitting"}
               placeholder={t("newsletter.placeholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -91,7 +106,7 @@ export default function Newsletter() {
             />
             <button
               type="submit"
-              disabled={sent}
+              disabled={sent || state === "submitting"}
               className="group shrink-0 inline-flex items-center gap-2.5 pl-4 py-3.5 text-xs tracking-wider2 uppercase font-medium text-ink disabled:opacity-60"
             >
               {sent ? (
@@ -131,6 +146,17 @@ export default function Newsletter() {
                 className="mt-4 text-[13px] tracking-[0.05em] text-gold"
               >
                 {t("newsletter.success")}
+              </motion.p>
+            )}
+            {state === "error" && (
+              <motion.p
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.4, ease: EASE }}
+                className="mt-4 text-[13px] tracking-[0.05em] text-[#9a4a3a]"
+              >
+                {t("newsletter.error")}
               </motion.p>
             )}
           </AnimatePresence>

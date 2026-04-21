@@ -19,10 +19,21 @@ import BlogPost from "./pages/BlogPost";
 import About from "./pages/About";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
+import NewsletterConfirmed from "./pages/NewsletterConfirmed";
+import NewsletterUnsubscribed from "./pages/NewsletterUnsubscribed";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Account from "./pages/Account";
-import Admin from "./pages/Admin";
+import Orders from "./pages/Orders";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminOverview from "./pages/admin/Overview";
+import AdminProducts from "./pages/admin/Products";
+import AdminCollections from "./pages/admin/Collections";
+import AdminOrders from "./pages/admin/Orders";
+import AdminSubscribers from "./pages/admin/Subscribers";
+import AdminCampaigns from "./pages/admin/Campaigns";
+import AdminUsers from "./pages/admin/Users";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -50,10 +61,23 @@ export default function App() {
                     <Route path="/about" element={<About />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                    <Route path="/newsletter/confirmed" element={<NewsletterConfirmed />} />
+                    <Route path="/newsletter/unsubscribed" element={<NewsletterUnsubscribed />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/account" element={<Account />} />
-                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/account/orders" element={<Orders />} />
+                    <Route path="/admin" element={<AdminLayout />}>
+                      <Route index element={<AdminOverview />} />
+                      <Route path="products" element={<AdminProducts />} />
+                      <Route path="collections" element={<AdminCollections />} />
+                      <Route path="orders" element={<AdminOrders />} />
+                      <Route path="orders/:orderId" element={<AdminOrders />} />
+                      <Route path="subscribers" element={<AdminSubscribers />} />
+                      <Route path="campaigns" element={<AdminCampaigns />} />
+                      <Route path="users" element={<AdminUsers />} />
+                    </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </PageTransition>

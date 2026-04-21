@@ -81,6 +81,12 @@ export default function Account() {
               {t("auth.account.adminPanel")}
             </Link>
           )}
+          <Link
+            to="/account/orders"
+            className="inline-flex items-center justify-center rounded-full border border-ink text-ink px-8 py-3 text-sm tracking-wider2 uppercase hover:bg-ink hover:text-bone transition-colors"
+          >
+            {t("ordersPage.title")}
+          </Link>
           <button
             type="button"
             onClick={onSignOut}

@@ -3,7 +3,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/((?!assets/|img/|favicon.svg|.*\\..*).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|assets/|img/|favicon.svg|.*\\..*).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
