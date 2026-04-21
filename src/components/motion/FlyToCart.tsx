@@ -19,6 +19,12 @@ interface Flight {
   arcX: number;
 }
 
+interface Ripple {
+  id: number;
+  x: number;
+  y: number;
+}
+
 interface FlyToCartContextValue {
   /** Register the element (typically the cart button) that flights land on. */
   registerTarget: (el: HTMLElement | null) => void;
@@ -38,6 +44,7 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
   const reduced = useReducedMotion();
   const targetRef = useRef<HTMLElement | null>(null);
   const [flights, setFlights] = useState<Flight[]>([]);
+  const [ripples, setRipples] = useState<Ripple[]>([]);
   const idRef = useRef(0);
 
   const registerTarget = useCallback((el: HTMLElement | null) => {
@@ -63,8 +70,16 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
     [reduced],
   );
 
-  const remove = useCallback((id: number) => {
-    setFlights((prev) => prev.filter((f) => f.id !== id));
+  const remove = useCallback((flight: Flight) => {
+    setFlights((prev) => prev.filter((f) => f.id !== flight.id));
+    setRipples((prev) => [
+      ...prev,
+      { id: flight.id, x: flight.to.x, y: flight.to.y },
+    ]);
+  }, []);
+
+  const dismissRipple = useCallback((id: number) => {
+    setRipples((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
   // Light cleanup in case a flight stalls.
@@ -73,7 +88,7 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
     const ids = flights.map((f) => f.id);
     const t = window.setTimeout(() => {
       setFlights((prev) => prev.filter((f) => !ids.includes(f.id)));
-    }, 1600);
+    }, 1400);
     return () => window.clearTimeout(t);
   }, [flights]);
 
@@ -85,7 +100,8 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
           <div className="pointer-events-none fixed inset-0 z-[90]">
             <AnimatePresence>
               {flights.map((f) => {
-                const duration = 0.95;
+                const duration = 0.72;
+                const endSize = 24;
                 return (
                   <motion.img
                     key={f.id}
@@ -97,37 +113,64 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
                       y: f.from.y,
                       width: f.from.w,
                       height: f.from.h,
-                      borderRadius: 0,
+                      borderRadius: 2,
                       opacity: 1,
-                      rotate: 0,
                     }}
                     animate={{
-                      x: [f.from.x, f.arcX, f.to.x - 16],
-                      y: [f.from.y, (f.from.y + f.to.y) / 2 - 140, f.to.y - 16],
-                      width: [f.from.w, f.from.w * 0.4, 32],
-                      height: [f.from.h, f.from.h * 0.4, 32],
-                      borderRadius: [0, 6, 999],
-                      rotate: [0, -8, 6],
-                      opacity: [1, 1, 0.9],
+                      x: [f.from.x, f.arcX, f.to.x - endSize / 2],
+                      y: [
+                        f.from.y,
+                        (f.from.y + f.to.y) / 2 - 70,
+                        f.to.y - endSize / 2,
+                      ],
+                      width: [f.from.w, f.from.w * 0.45, endSize],
+                      height: [f.from.h, f.from.h * 0.45, endSize],
+                      borderRadius: [2, 4, 999],
+                      opacity: [1, 1, 0],
                     }}
-                    exit={{ opacity: 0, scale: 0.5 }}
                     transition={{
                       duration,
                       times: [0, 0.55, 1],
-                      ease: [0.55, 0.05, 0.2, 1],
+                      ease: [0.32, 0.72, 0, 1],
+                      opacity: {
+                        duration,
+                        times: [0, 0.7, 1],
+                        ease: "easeOut",
+                      },
                     }}
-                    onAnimationComplete={() => remove(f.id)}
+                    onAnimationComplete={() => remove(f)}
                     style={{
                       position: "absolute",
                       top: 0,
                       left: 0,
                       objectFit: "cover",
                       objectPosition: "top",
-                      boxShadow: "0 18px 40px -12px rgba(0,0,0,0.35)",
+                      boxShadow: "0 12px 28px -14px rgba(0,0,0,0.25)",
                     }}
                   />
                 );
               })}
+            </AnimatePresence>
+            <AnimatePresence>
+              {ripples.map((r) => (
+                <motion.span
+                  key={`ripple-${r.id}`}
+                  aria-hidden
+                  initial={{ opacity: 0.5, scale: 0.25 }}
+                  animate={{ opacity: 0, scale: 1.8 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  onAnimationComplete={() => dismissRipple(r.id)}
+                  style={{
+                    position: "absolute",
+                    left: r.x - 22,
+                    top: r.y - 22,
+                    width: 44,
+                    height: 44,
+                    borderRadius: 999,
+                    border: "1px solid rgba(13,13,13,0.55)",
+                  }}
+                />
+              ))}
             </AnimatePresence>
           </div>,
           document.body,
