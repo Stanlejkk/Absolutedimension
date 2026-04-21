@@ -84,7 +84,7 @@ export function ProductTransitionProvider({ children }: { children: ReactNode })
 
   useEffect(() => {
     if (!flight) return;
-    const t = window.setTimeout(() => setFlight(null), 1100);
+    const t = window.setTimeout(() => setFlight(null), 850);
     return () => window.clearTimeout(t);
   }, [flight]);
 
@@ -113,10 +113,13 @@ export function ProductTransitionProvider({ children }: { children: ReactNode })
                 y: flight.to.top,
                 width: flight.to.width,
                 height: flight.to.height,
-                opacity: 1,
+                opacity: [1, 1, 0],
               }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
+              transition={{
+                duration: 0.7,
+                ease: [0.32, 0.72, 0, 1],
+                opacity: { duration: 0.7, times: [0, 0.82, 1], ease: "easeOut" },
+              }}
               style={{
                 position: "absolute",
                 top: 0,
@@ -124,12 +127,6 @@ export function ProductTransitionProvider({ children }: { children: ReactNode })
                 objectFit: "cover",
                 objectPosition: "top",
               }}
-            />
-            <motion.span
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 0 }}
-              transition={{ delay: 0.75, duration: 0.25 }}
-              className="pointer-events-none absolute inset-0"
             />
           </motion.div>,
           document.body,

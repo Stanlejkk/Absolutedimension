@@ -270,8 +270,8 @@ export default function Product() {
               disabled={!selectedSize}
               whileHover={selectedSize ? { scale: 1.01 } : undefined}
               whileTap={selectedSize ? { scale: 0.985 } : undefined}
-              animate={added ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              animate={added ? { scale: [1, 1.015, 1] } : { scale: 1 }}
+              transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
               className={`group relative w-full inline-flex items-center justify-center gap-2.5 px-7 py-[18px] rounded-full text-xs tracking-wider2 uppercase font-medium overflow-hidden transition-colors duration-300 ${
                 !selectedSize
                   ? "bg-ink/40 text-bone cursor-not-allowed"
