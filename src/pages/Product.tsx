@@ -80,14 +80,17 @@ export default function Product() {
   // `product.images`.
   const gallery = [product.image, product.image, product.image];
 
+  const soldOut = product.stockQuantity === 0;
+
   const handleAdd = () => {
-    if (!selectedSize) return;
+    if (!selectedSize || soldOut) return;
     addItem({
       productId: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
       size: selectedSize,
+      stockLimit: product.stockQuantity,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -184,6 +187,11 @@ export default function Product() {
                     {t("shop.badges.new")}
                   </span>
                 )}
+                {soldOut && (
+                  <span className="absolute top-5 right-5 bg-ink text-bone text-[10px] tracking-wider2 uppercase font-medium px-3 py-1.5 rounded-full">
+                    {t("adminPanel.products.soldOut")}
+                  </span>
+                )}
               </motion.div>
 
               <motion.div
@@ -267,20 +275,24 @@ export default function Product() {
             <motion.button
               type="button"
               onClick={handleAdd}
-              disabled={!selectedSize}
-              whileHover={selectedSize ? { scale: 1.01 } : undefined}
-              whileTap={selectedSize ? { scale: 0.985 } : undefined}
+              disabled={!selectedSize || soldOut}
+              whileHover={selectedSize && !soldOut ? { scale: 1.01 } : undefined}
+              whileTap={selectedSize && !soldOut ? { scale: 0.985 } : undefined}
               animate={added ? { scale: [1, 1.015, 1] } : { scale: 1 }}
               transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
               className={`group relative w-full inline-flex items-center justify-center gap-2.5 px-7 py-[18px] rounded-full text-xs tracking-wider2 uppercase font-medium overflow-hidden transition-colors duration-300 ${
-                !selectedSize
+                soldOut
+                  ? "bg-ink/40 text-bone cursor-not-allowed"
+                  : !selectedSize
                   ? "bg-ink/40 text-bone cursor-not-allowed"
                   : added
                   ? "bg-gold text-ink"
                   : "bg-ink text-bone"
               }`}
             >
-              {added ? (
+              {soldOut ? (
+                t("adminPanel.products.soldOut")
+              ) : added ? (
                 <>
                   <svg
                     viewBox="0 0 24 24"

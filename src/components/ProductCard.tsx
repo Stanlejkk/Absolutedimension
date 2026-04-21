@@ -88,6 +88,12 @@ export default function ProductCard({ product, index = 0, dense = false }: Props
             </motion.span>
           )}
 
+          {product.stockQuantity === 0 && (
+            <span className="absolute top-3 right-3 bg-ink text-bone text-[10px] tracking-wider2 uppercase px-2.5 py-1">
+              {t("adminPanel.products.soldOut")}
+            </span>
+          )}
+
           <motion.div
             aria-hidden
             initial={{ y: "100%" }}
