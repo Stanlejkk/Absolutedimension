@@ -52,7 +52,7 @@ export default function Cart() {
               >
                 <Link
                   to={`/product/${item.productId}`}
-                  className="relative h-32 w-24 md:h-40 md:w-32 flex-shrink-0 overflow-hidden bg-[#e8ddcb]"
+                  className="relative h-32 w-24 md:h-40 md:w-32 flex-shrink-0 overflow-hidden bg-bone-2"
                 >
                   <img
                     src={item.image}

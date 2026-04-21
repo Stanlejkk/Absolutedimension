@@ -73,7 +73,7 @@ export default function Checkout() {
         >
           {items.map((item) => (
             <div key={item.key} className="flex items-center gap-4 p-5">
-              <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden bg-[#e8ddcb]">
+              <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden bg-bone-2">
                 <img
                   src={item.image}
                   alt={item.name}

@@ -153,7 +153,7 @@ function CartLine({ item }: { item: CartItem }) {
     <li className="flex gap-4 px-6 py-5">
       <Link
         to={`/product/${item.productId}`}
-        className="relative h-24 w-20 flex-shrink-0 overflow-hidden bg-[#e8ddcb]"
+        className="relative h-24 w-20 flex-shrink-0 overflow-hidden bg-bone-2"
       >
         <img
           src={item.image}

@@ -9,6 +9,7 @@ export default {
       },
       colors: {
         bone: "#f4f0ea",
+        "bone-2": "#ece5d8",
         ink: "#0d0d0d",
         muted: "#6b6458",
         gold: "#b8936a",

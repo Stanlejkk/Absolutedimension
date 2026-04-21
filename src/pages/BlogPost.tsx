@@ -54,7 +54,7 @@ export default function BlogPost() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-12 md:mt-16 aspect-[16/9] overflow-hidden bg-[#e9dfcf]"
+          className="relative mt-12 md:mt-16 aspect-[16/9] overflow-hidden bg-bone-2"
         >
           <img
             src={post.image}
@@ -84,7 +84,7 @@ export default function BlogPost() {
             <div className="grid md:grid-cols-3 gap-6 md:gap-8">
               {more.map((p) => (
                 <Link key={p.slug} to={`/blog/${p.slug}`} className="group block">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-[#e9dfcf]">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-bone-2">
                     <img
                       src={p.image}
                       alt={p.title}

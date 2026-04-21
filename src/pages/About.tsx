@@ -106,7 +106,7 @@ export default function About() {
                   }}
                   transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <p className="font-display text-4xl md:text-5xl font-light text-gold">{s.k}</p>
+                  <p className="font-display text-4xl md:text-5xl font-light tabular-nums tracking-[-0.02em]">{s.k}</p>
                   <p className="eyebrow mt-2">{s.v}</p>
                 </motion.li>
               ))}
@@ -162,7 +162,7 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="aspect-[3/4] overflow-hidden bg-[#e9dfcf]"
+            className="aspect-[3/4] overflow-hidden bg-bone-2"
           >
             <img src="/img/hero/hero-2.jpg" alt="" className="h-full w-full object-cover" />
           </motion.div>

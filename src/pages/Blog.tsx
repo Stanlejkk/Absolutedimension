@@ -4,6 +4,8 @@ import { useBlogPosts } from "../lib/useCatalog";
 import { useLocale } from "../i18n";
 import type { DictionaryKey } from "../i18n";
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 const TAG_KEYS: Record<string, DictionaryKey> = {
   "sztuka-ubioru": "sections.editorialTagEditorial",
   "monaco-collection-story": "sections.editorialTagLookbook",
@@ -11,103 +13,96 @@ const TAG_KEYS: Record<string, DictionaryKey> = {
   "evening-styling-guide": "sections.editorialTagStyling",
 };
 
+/**
+ * Journal / Blog index — matches ad-collection.jsx → JournalPage. One big
+ * italic headline and a 3-column grid of cards. No feature post, no bone
+ * chip on the image; the tag+date reads inline under the image with a
+ * small gold accent on the tag, like a newsprint caption.
+ */
 export default function Blog() {
   const blogPosts = useBlogPosts();
   const { t, formatDate } = useLocale();
-  const [feature, ...rest] = blogPosts;
 
   return (
-    <section className="pt-32 md:pt-40 pb-24 md:pb-36">
+    <section className="pt-36 md:pt-44 pb-24 md:pb-32">
       <div className="container-x">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-3xl mb-14 md:mb-20"
-        >
-          <p className="eyebrow mb-4">{t("blog.eyebrow")}</p>
-          <h1 className="font-display text-5xl md:text-7xl font-light leading-[1]">
-            {t("sections.editorialHeadline1")} <span className="italic">{t("sections.editorialHeadline2")}</span>
-          </h1>
-          <p className="mt-6 text-muted max-w-xl leading-relaxed">
-            {t("blog.subtitle")}
-          </p>
-        </motion.div>
-
-        {/* Feature */}
-        {feature && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-16 md:mb-24"
+        <div className="mb-16 md:mb-20 max-w-5xl">
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE }}
+            className="eyebrow mb-5"
           >
-            <Link to={`/blog/${feature.slug}`} className="group grid lg:grid-cols-12 gap-8 md:gap-12 items-center">
-              <div className="lg:col-span-7 relative aspect-[16/10] overflow-hidden bg-[#e9dfcf]">
-                <img
-                  src={feature.image}
-                  alt={feature.title}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
-                />
-                <span className="absolute top-4 left-4 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
-                  {TAG_KEYS[feature.slug] ? t(TAG_KEYS[feature.slug]) : t("blog.eyebrow")}
-                </span>
-              </div>
-              <div className="lg:col-span-5">
-                <p className="eyebrow text-muted mb-4">
-                  {formatDate(feature.date)} — {feature.author}
-                </p>
-                <h2 className="font-display text-3xl md:text-5xl font-light leading-[1.05]">
-                  {feature.title}
-                </h2>
-                <p className="mt-5 text-muted leading-relaxed">{feature.excerpt}</p>
-                <span className="mt-6 inline-flex items-center gap-2 text-xs tracking-wider2 uppercase">
-                  {t("blog.readMore")}
-                  <span className="block h-px w-8 bg-ink/50 group-hover:w-14 transition-all" />
-                </span>
-              </div>
-            </Link>
-          </motion.div>
-        )}
+            {t("blog.eyebrow")}
+          </motion.p>
+          <motion.h1
+            initial="hidden"
+            animate="show"
+            transition={{ staggerChildren: 0.14 }}
+            className="font-display font-light text-[clamp(3rem,8vw,7rem)] leading-[0.94] tracking-[-0.025em]"
+          >
+            <span className="inline-block overflow-hidden align-baseline">
+              <motion.span
+                variants={{
+                  hidden: { y: "110%" },
+                  show: { y: 0, transition: { duration: 1, ease: EASE } },
+                }}
+                className="inline-block"
+              >
+                {t("sections.editorialHeadline1")}
+              </motion.span>
+            </span>{" "}
+            <span className="inline-block overflow-hidden align-baseline">
+              <motion.span
+                variants={{
+                  hidden: { y: "110%" },
+                  show: { y: 0, transition: { duration: 1, ease: EASE } },
+                }}
+                className="inline-block italic text-muted"
+              >
+                {t("sections.editorialHeadline2")}
+              </motion.span>
+            </span>
+          </motion.h1>
+        </div>
 
-        {/* Grid */}
-        {rest.length > 0 && (
-          <div className="grid md:grid-cols-3 gap-6 md:gap-8 pt-12 border-t border-ink/10">
-            {rest.map((post, i) => (
-              <motion.div
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+          {blogPosts.map((post, i) => {
+            const tagKey = TAG_KEYS[post.slug];
+            const tagLabel = tagKey ? t(tagKey) : t("blog.eyebrow");
+            return (
+              <motion.article
                 key={post.slug}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.8, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.8, delay: i * 0.1, ease: EASE }}
               >
                 <Link to={`/blog/${post.slug}`} className="group block">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-[#e9dfcf]">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-bone-2 mb-5">
                     <img
                       src={post.image}
                       alt={post.title}
                       loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
                     />
-                    <span className="absolute top-4 left-4 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
-                      {TAG_KEYS[post.slug] ? t(TAG_KEYS[post.slug]) : t("blog.eyebrow")}
-                    </span>
                   </div>
-                  <div className="mt-5">
-                    <p className="eyebrow text-muted mb-2">{formatDate(post.date)}</p>
-                    <h3 className="font-display text-2xl md:text-3xl font-light">
-                      {post.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-muted leading-relaxed line-clamp-3">
-                      {post.excerpt}
-                    </p>
+                  <div className="flex items-center gap-3 text-[11px] tracking-wider2 uppercase font-medium text-muted mb-3">
+                    <span className="text-gold">{tagLabel}</span>
+                    <span aria-hidden>·</span>
+                    <span>{formatDate(post.date)}</span>
                   </div>
+                  <h2 className="font-display font-normal text-[1.75rem] md:text-[1.875rem] leading-[1.1] tracking-[-0.01em] mb-3">
+                    {post.title}
+                  </h2>
+                  <p className="text-sm leading-relaxed text-muted">
+                    {post.excerpt}
+                  </p>
                 </Link>
-              </motion.div>
-            ))}
-          </div>
-        )}
+              </motion.article>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

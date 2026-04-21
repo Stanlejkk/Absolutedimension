@@ -1,17 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-} from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   useProduct,
   useCollection,
   useProductsByCollection,
   useFormatPrice,
+  useCategoryLabel,
 } from "../lib/useCatalog";
 import ProductCard from "../components/ProductCard";
 import { useLocale } from "../i18n";
@@ -20,8 +15,14 @@ import { useProductTransition } from "../components/motion/ProductTransition";
 import { useFlyToCart } from "../components/motion/FlyToCart";
 import { useToast } from "../components/motion/Toast";
 import SpringNumber from "../components/motion/SpringNumber";
-import Grain from "../components/motion/Grain";
 
+/**
+ * Product detail — matches ad-product.jsx → ProductPage. A 1.2fr/1fr split:
+ * left is the gallery (80px sticky thumbnail rail + main image + stacked
+ * secondary image), right is a sticky info column with eyebrow, name,
+ * price, description, size buttons, full-width pill CTA, and 3 accordions.
+ * Keeps the repo's FlyToCart / SpringNumber / toast wiring intact.
+ */
 export default function Product() {
   const { id } = useParams<{ id: string }>();
   const product = useProduct(id);
@@ -30,34 +31,20 @@ export default function Product() {
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [added, setAdded] = useState(false);
-  const [imgFailed, setImgFailed] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
   const reduced = useReducedMotion();
   const { consume } = useProductTransition();
   const { fly } = useFlyToCart();
   const toast = useToast();
 
   const imageWrapRef = useRef<HTMLDivElement>(null);
-  const galleryRef = useRef<HTMLDivElement>(null);
 
-  const { scrollYProgress } = useScroll({
-    target: galleryRef,
-    offset: ["start start", "end end"],
-  });
-  const smooth = useSpring(scrollYProgress, {
-    stiffness: 90,
-    damping: 24,
-    mass: 0.5,
-  });
-  const heroScale = useTransform(smooth, [0, 1], [1, 1.22]);
-  const heroY = useTransform(smooth, [0, 1], ["0%", "-6%"]);
-  const heroX = useTransform(smooth, [0, 1], ["0%", "4%"]);
-  const caption1 = useTransform(smooth, [0, 0.33, 0.5], [1, 1, 0]);
-  const caption2 = useTransform(smooth, [0.25, 0.5, 0.75], [0, 1, 0]);
-  const caption3 = useTransform(smooth, [0.5, 0.72, 1], [0, 1, 1]);
+  useEffect(() => {
+    setSelectedSize("");
+    setAdded(false);
+    setActiveImg(0);
+  }, [id]);
 
-  // Consume a pending card→page shared-element animation once the image
-  // has a real on-screen rect to land on. We use a rAF to avoid measuring
-  // before layout stabilises.
   useEffect(() => {
     if (!product || reduced) return;
     const raf = window.requestAnimationFrame(() => {
@@ -69,13 +56,16 @@ export default function Product() {
 
   const collection = useCollection(product?.collection);
   const collectionProducts = useProductsByCollection(product?.collection);
+  const categoryLabel = useCategoryLabel(product?.category ?? ("dresses" as never));
 
   if (!product) {
     return (
       <section className="pt-40 pb-24">
         <div className="container-x text-center">
           <p className="eyebrow mb-4">{t("notFound.code")}</p>
-          <h1 className="font-display text-5xl font-light mb-6">{t("product.notFoundTitle")}</h1>
+          <h1 className="font-display text-5xl font-light mb-6">
+            {t("product.notFoundTitle")}
+          </h1>
           <Link to="/shop" className="underline underline-offset-4">
             {t("product.backToShop")}
           </Link>
@@ -85,9 +75,13 @@ export default function Product() {
   }
 
   const related = collectionProducts.filter((p) => p.id !== product.id).slice(0, 4);
+  // Until products carry multiple photos, repeat the hero asset for the
+  // thumbnail rail + stacked gallery. When data grows, swap `gallery` for
+  // `product.images`.
+  const gallery = [product.image, product.image, product.image];
 
   const handleAdd = () => {
-    if (!selectedSize || !product) return;
+    if (!selectedSize) return;
     addItem({
       productId: product.id,
       name: product.name,
@@ -96,12 +90,11 @@ export default function Product() {
       size: selectedSize,
     });
     setAdded(true);
-    setTimeout(() => setAdded(false), 2400);
+    setTimeout(() => setAdded(false), 2000);
 
     const rect = imageWrapRef.current?.getBoundingClientRect();
-    if (rect) {
-      fly({ from: rect, image: product.image });
-    }
+    if (rect) fly({ from: rect, image: product.image });
+
     toast.push({
       kind: "success",
       title: t("cart.addedToast"),
@@ -111,240 +104,242 @@ export default function Product() {
   };
 
   return (
-    <article className="pb-24 md:pb-32">
-      <div className="container-x pt-28 md:pt-32">
-        {/* Breadcrumbs */}
-        <nav className="flex flex-wrap gap-2 text-xs tracking-wide text-muted mb-8">
-          <Link to="/" className="link-rule hover:text-ink">{t("product.breadcrumbHome")}</Link>
-          <span>/</span>
-          <Link to="/shop" className="link-rule hover:text-ink">{t("nav.shop")}</Link>
-          <span>/</span>
+    <article className="pt-28 md:pt-32 pb-24 md:pb-32">
+      <div className="container-x">
+        {/* Breadcrumb — all-caps dot-separated, editorial */}
+        <motion.nav
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-10 flex flex-wrap items-center gap-2 text-[11px] tracking-wider2 uppercase font-medium text-muted"
+        >
+          <Link to="/shop" className="hover:text-ink transition-colors">
+            {t("nav.shop")}
+          </Link>
+          <span aria-hidden>·</span>
           {collection && (
             <>
-              <Link to={`/collections/${collection.slug}`} className="link-rule hover:text-ink">
+              <Link
+                to={`/collections/${collection.slug}`}
+                className="hover:text-ink transition-colors"
+              >
                 {collection.name}
               </Link>
-              <span>/</span>
+              <span aria-hidden>·</span>
             </>
           )}
           <span className="text-ink">{product.name}</span>
-        </nav>
+        </motion.nav>
 
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-16">
-          {/* Image column — a tall scroll-pinned canvas that scrubs
-              through three "chapters" as the shopper reads the details. */}
-          <div ref={galleryRef} className="lg:col-span-7 lg:h-[220vh] relative">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="lg:sticky lg:top-24"
-            >
-              <div
-                ref={imageWrapRef}
-                className="relative aspect-[3/4] overflow-hidden bg-[#e8ddcb]"
-              >
-                {!imgFailed ? (
-                  <motion.img
-                    src={product.image}
-                    alt={product.name}
-                    onError={() => setImgFailed(true)}
-                    style={reduced ? undefined : { scale: heroScale, y: heroY, x: heroX }}
-                    className="absolute inset-0 h-full w-full object-cover object-top will-change-transform"
+        <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 lg:gap-16 items-start">
+          {/* Gallery */}
+          <div className="grid lg:grid-cols-[80px_1fr] gap-5 items-start">
+            {/* Thumbnail rail */}
+            <div className="flex lg:flex-col gap-2.5 lg:sticky lg:top-32 overflow-x-auto lg:overflow-visible">
+              {gallery.map((g, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActiveImg(i)}
+                  aria-label={`View image ${i + 1}`}
+                  className={`relative w-20 aspect-[3/4] shrink-0 overflow-hidden bg-bone-2 transition-opacity duration-300 ${
+                    activeImg === i ? "opacity-100" : "opacity-70 hover:opacity-90"
+                  }`}
+                  style={{
+                    outline:
+                      activeImg === i ? "1px solid #0d0d0d" : "1px solid transparent",
+                    outlineOffset: 3,
+                  }}
+                >
+                  <img
+                    src={g}
+                    alt=""
+                    aria-hidden
+                    className="absolute inset-0 h-full w-full object-cover object-top"
                   />
-                ) : (
-                  <div className="absolute inset-0 grid place-items-center text-muted italic">
-                    {product.name}
-                  </div>
-                )}
+                </button>
+              ))}
+            </div>
 
-                <Grain opacity={0.14} />
-
+            {/* Main + stacked secondary */}
+            <div>
+              <motion.div
+                ref={imageWrapRef}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="relative aspect-[3/4] overflow-hidden bg-bone-2"
+              >
+                <motion.img
+                  key={activeImg}
+                  src={gallery[activeImg]}
+                  alt={product.name}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 h-full w-full object-cover object-top"
+                />
                 {product.newArrival && (
-                  <span className="absolute top-4 left-4 bg-bone/90 text-ink text-[10px] tracking-wider2 uppercase px-2.5 py-1">
+                  <span className="absolute top-5 left-5 bg-bone text-ink text-[10px] tracking-wider2 uppercase font-medium px-3 py-1.5 rounded-full">
                     {t("shop.badges.new")}
                   </span>
                 )}
+              </motion.div>
 
-                {/* Scroll-linked chapter captions — sweep across the image */}
-                {!reduced && (
-                  <div className="pointer-events-none absolute inset-x-6 bottom-6 hidden md:flex items-end justify-between text-bone">
-                    <motion.div style={{ opacity: caption1 }} className="max-w-[14rem]">
-                      <p className="eyebrow text-bone/70">01 — {t("product.details")}</p>
-                      <p className="font-display text-lg leading-snug mt-2">
-                        {product.name}
-                      </p>
-                    </motion.div>
-                    <motion.div
-                      style={{ opacity: caption2 }}
-                      className="max-w-[14rem] text-right"
-                    >
-                      <p className="eyebrow text-bone/70">
-                        02 — {t("product.materials")}
-                      </p>
-                      <p className="font-display italic text-lg leading-snug mt-2">
-                        {t("product.madeIn")}
-                      </p>
-                    </motion.div>
-                    <motion.div
-                      style={{ opacity: caption3 }}
-                      className="absolute inset-x-0 -bottom-1 text-center"
-                    >
-                      <p className="eyebrow text-bone/70">
-                        03 — {collection?.name ?? t("product.collectionSuffix")}
-                      </p>
-                    </motion.div>
-                  </div>
-                )}
-
-                {/* Progress rail for the chapter scroll */}
-                {!reduced && (
-                  <div className="pointer-events-none absolute top-0 right-0 h-full w-0.5 bg-bone/10">
-                    <motion.div
-                      style={{ scaleY: smooth }}
-                      className="h-full w-full origin-top bg-bone/80"
-                    />
-                  </div>
-                )}
-              </div>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-5 relative aspect-[3/4] overflow-hidden bg-bone-2"
+              >
+                <img
+                  src={product.image}
+                  alt=""
+                  aria-hidden
+                  loading="lazy"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+              </motion.div>
+            </div>
           </div>
 
-          {/* Details */}
+          {/* Info */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-5 flex flex-col lg:sticky lg:top-28 self-start"
+            className="lg:sticky lg:top-32"
           >
-            {collection && (
-              <Link
-                to={`/collections/${collection.slug}`}
-                className="link-rule eyebrow text-muted hover:text-ink mb-3 self-start"
-              >
-                {collection.name} {t("product.collectionSuffix")}
-              </Link>
-            )}
-            <h1 className="font-display text-4xl md:text-5xl font-light leading-[1.05]">
+            <p className="eyebrow mb-4">
+              {categoryLabel}
+              {collection && (
+                <>
+                  {" "}· {t("product.sharedCollection", { collection: collection.name })}
+                </>
+              )}
+            </p>
+            <h1 className="font-display font-light text-[clamp(2.5rem,4.5vw,3.75rem)] leading-[1] tracking-[-0.02em] mb-5">
               {product.name}
             </h1>
-            <p className="mt-4 text-xl tracking-wide text-ink tabular-nums">
+            <p className="tabular-nums text-[22px] font-normal tracking-[0.02em] mb-8">
               <SpringNumber value={product.price} format={formatPrice} />
             </p>
-            <p className="mt-6 text-muted leading-relaxed">{product.description}</p>
+            <p className="text-[15px] leading-[1.75] text-muted mb-10 max-w-[30rem]">
+              {product.description}
+            </p>
 
-            {/* Sizes */}
-            <div className="mt-10">
-              <p className="eyebrow mb-3">{t("product.size")}</p>
+            {/* Size */}
+            <div className="mb-8">
+              <div className="flex items-baseline justify-between mb-4">
+                <span className="eyebrow">{t("product.size")}</span>
+                {!selectedSize && (
+                  <span className="text-[11px] tracking-[0.1em] uppercase text-muted font-medium">
+                    {t("product.selectSize")}
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
-                {product.sizes.map((size) => (
-                  <motion.button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ type: "spring", stiffness: 420, damping: 22 }}
-                    className={`min-w-[3rem] px-4 py-2 text-xs tracking-wider2 uppercase border transition-colors ${
-                      selectedSize === size
-                        ? "border-ink bg-ink text-bone"
-                        : "border-ink/20 hover:border-ink"
-                    }`}
-                  >
-                    {size}
-                  </motion.button>
-                ))}
+                {product.sizes.map((s) => {
+                  const isSelected = selectedSize === s;
+                  return (
+                    <motion.button
+                      key={s}
+                      type="button"
+                      onClick={() => setSelectedSize(s)}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                      className={`min-w-14 h-[46px] px-4 text-[13px] font-medium tracking-[0.05em] transition-colors ${
+                        isSelected
+                          ? "bg-ink text-bone border border-ink"
+                          : "bg-transparent text-ink border border-ink/20 hover:border-ink"
+                      }`}
+                    >
+                      {s}
+                    </motion.button>
+                  );
+                })}
               </div>
             </div>
 
             {/* CTA */}
-            <div className="mt-8 flex flex-col gap-3">
-              <motion.button
-                onClick={handleAdd}
-                disabled={!selectedSize}
-                whileHover={selectedSize ? { scale: 1.01 } : undefined}
-                whileTap={selectedSize ? { scale: 0.985 } : undefined}
-                animate={added ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className={`group relative inline-flex items-center justify-center gap-3 rounded-full px-6 py-4 text-sm tracking-wider2 uppercase overflow-hidden transition-colors ${
-                  !selectedSize
-                    ? "bg-ink/20 text-ink/40 cursor-not-allowed"
-                    : added
-                    ? "bg-gold text-ink"
-                    : "bg-ink text-bone"
-                }`}
-              >
-                <span className="relative z-10">
-                  {!selectedSize ? t("product.selectSize") : added ? t("product.added") : t("product.addToBag")}
-                </span>
-                {selectedSize && !added && (
-                  <svg viewBox="0 0 24 24" className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-                {added && (
-                  <motion.svg
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            <motion.button
+              type="button"
+              onClick={handleAdd}
+              disabled={!selectedSize}
+              whileHover={selectedSize ? { scale: 1.01 } : undefined}
+              whileTap={selectedSize ? { scale: 0.985 } : undefined}
+              animate={added ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className={`group relative w-full inline-flex items-center justify-center gap-2.5 px-7 py-[18px] rounded-full text-xs tracking-wider2 uppercase font-medium overflow-hidden transition-colors duration-300 ${
+                !selectedSize
+                  ? "bg-ink/40 text-bone cursor-not-allowed"
+                  : added
+                  ? "bg-gold text-ink"
+                  : "bg-ink text-bone"
+              }`}
+            >
+              {added ? (
+                <>
+                  <svg
                     viewBox="0 0 24 24"
-                    className="relative z-10 h-4 w-4"
+                    className="h-3.5 w-3.5"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.75"
                   >
-                    <motion.path
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    <path
                       d="M5 12l5 5L20 7"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                  </motion.svg>
-                )}
-              </motion.button>
-              <button className="inline-flex items-center justify-center gap-2 rounded-full border border-ink/20 px-6 py-3 text-sm tracking-wide hover:border-ink transition">
-                {t("product.saveForLater")}
-              </button>
-            </div>
+                  </svg>
+                  {t("product.added")}
+                </>
+              ) : (
+                t("product.addToBag")
+              )}
+            </motion.button>
 
-            {/* Accordion details */}
-            <div className="mt-12 divide-y divide-ink/10 border-y border-ink/10">
-              <Section title={t("product.details")}>{product.description}</Section>
-              <Section title={t("product.materials")}>
-                {t("product.materialsBody")}
-              </Section>
-              <Section title={t("product.shippingTitle")}>
-                {t("product.shippingBody")}
-              </Section>
-              <Section title={t("product.returnsTitle")}>
-                {t("product.returnsBody")}
-              </Section>
+            {/* Accordions */}
+            <div className="mt-10">
+              <Accordion title={t("product.materials")}>
+                <p>{t("product.materialsBody")}</p>
+                <p className="mt-2 text-[12px] tracking-[0.15em] uppercase text-muted font-medium">
+                  {t("product.madeIn")}
+                </p>
+              </Accordion>
+              <Accordion title={t("product.shippingTitle")}>
+                <p>{t("product.shippingBody")}</p>
+              </Accordion>
+              <Accordion title={t("product.returnsTitle")}>
+                <p>{t("product.returnsBody")}</p>
+              </Accordion>
             </div>
           </motion.div>
         </div>
 
         {/* Related */}
         {related.length > 0 && (
-          <section className="mt-24 md:mt-32">
-            <div className="flex items-end justify-between mb-10 gap-6">
-              <h2 className="font-display text-3xl md:text-5xl font-light">
-                {t("product.fromSameCollection")}{" "}
-                <span className="italic">{t("product.fromSameCollectionItalic")}</span>
+          <section className="mt-32 md:mt-40">
+            <div className="flex items-baseline justify-between mb-12 gap-6 flex-wrap">
+              <h2 className="font-display italic font-light text-[clamp(2rem,4vw,3rem)] leading-[0.98] tracking-[-0.02em]">
+                {t("product.recommended")}
               </h2>
               {collection && (
                 <Link
                   to={`/collections/${collection.slug}`}
-                  className="hidden sm:inline-flex items-center gap-2 text-sm text-muted hover:text-ink group"
+                  className="inline-flex items-center gap-3 text-xs tracking-wider2 uppercase font-medium text-muted hover:text-ink transition-colors"
                 >
-                  {t("product.viewCollection", { collection: collection.name })}
-                  <span className="block h-px w-10 bg-ink/30 group-hover:w-16 transition-all" />
+                  {t("common.viewAll")}
+                  <span className="block h-px w-8 bg-ink/30 transition-all" />
                 </Link>
               )}
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-10 md:gap-x-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
               {related.map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} dense />
+                <ProductCard key={p.id} product={p} index={i} />
               ))}
             </div>
           </section>
@@ -354,33 +349,44 @@ export default function Product() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Accordion({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   return (
-    <div>
+    <div className="border-t border-ink/15">
       <button
+        type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between py-4 text-sm tracking-wider2 uppercase"
         aria-expanded={open}
+        className="w-full py-5 flex items-center justify-between text-xs tracking-[0.18em] uppercase font-medium text-ink"
       >
         <span>{title}</span>
-        <motion.span
+        <motion.svg
           animate={{ rotate: open ? 45 : 0 }}
           transition={{ duration: 0.3 }}
-          className="inline-flex h-4 w-4 items-center justify-center"
+          viewBox="0 0 24 24"
+          className="h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
         >
-          <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-          </svg>
-        </motion.span>
+          <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+        </motion.svg>
       </button>
       <motion.div
         initial={false}
         animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         className="overflow-hidden"
       >
-        <p className="pb-5 text-sm text-muted leading-relaxed">{children}</p>
+        <div className="pb-6 text-sm leading-[1.7] text-muted space-y-2">
+          {children}
+        </div>
       </motion.div>
     </div>
   );

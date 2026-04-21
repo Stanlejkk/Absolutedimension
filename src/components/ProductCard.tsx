@@ -48,7 +48,7 @@ export default function ProductCard({ product, index = 0, dense = false }: Props
       >
         <TiltCard
           max={4}
-          className="relative aspect-[3/4] overflow-hidden bg-[#e8ddcb] will-change-transform"
+          className="relative aspect-[3/4] overflow-hidden bg-bone-2 will-change-transform"
         >
           <div ref={imgWrapRef} className="absolute inset-0">
             {!imgFailed ? (
