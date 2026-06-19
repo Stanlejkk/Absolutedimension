@@ -36,12 +36,25 @@ export interface ProductRow {
   category: string;
   collection: string;
   image: string;
+  images: string[] | null;
   description_en: string;
   description_pl: string;
   sizes: string[];
   featured: boolean;
   new_arrival: boolean;
   stock_quantity: number;
+  materials_en: string | null;
+  materials_pl: string | null;
+  color_en: string | null;
+  color_pl: string | null;
+}
+
+export interface ProductVariantRow {
+  id: string;
+  product_id: string;
+  size: string;
+  stock_quantity: number;
+  sku: string | null;
 }
 
 export interface CollectionRow {

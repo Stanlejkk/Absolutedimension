@@ -49,10 +49,23 @@ create table if not exists public.products (
 );
 
 -- Idempotent: add stock_quantity to existing databases that were created
--- before the column was introduced.
+-- before the column was introduced. `stock_quantity` is now a *cached total*
+-- across all size variants, kept in sync by a trigger on product_variants.
 alter table public.products
   add column if not exists stock_quantity integer not null default 0
   check (stock_quantity >= 0);
+
+-- Content-fidelity columns (multi-photo galleries, fibre composition, colour).
+alter table public.products
+  add column if not exists images        text[] not null default '{}';
+alter table public.products
+  add column if not exists materials_en  text;
+alter table public.products
+  add column if not exists materials_pl  text;
+alter table public.products
+  add column if not exists color_en      text;
+alter table public.products
+  add column if not exists color_pl      text;
 
 create index if not exists products_collection_idx on public.products (collection);
 create index if not exists products_category_idx on public.products (category);
@@ -60,18 +73,89 @@ create index if not exists products_featured_idx on public.products (featured) w
 create index if not exists products_new_arrival_idx on public.products (new_arrival) where new_arrival;
 create index if not exists products_stock_idx on public.products (stock_quantity);
 
--- Server-authoritative stock decrement. Called by the Stripe webhook once a
--- paid order has been persisted. `greatest(0, …)` guards against going
+-- ─── Per-size inventory ─────────────────────────────────────────────────────
+-- A row per (product, size). This is the source of truth for stock; the
+-- products.stock_quantity column above is a denormalised sum maintained by the
+-- trigger below so existing single-number readers keep working.
+create table if not exists public.product_variants (
+  id              uuid primary key default gen_random_uuid(),
+  product_id      text not null references public.products(id) on delete cascade,
+  size            text not null,
+  stock_quantity  integer not null default 0 check (stock_quantity >= 0),
+  sku             text,
+  unique (product_id, size)
+);
+
+create index if not exists product_variants_product_idx
+  on public.product_variants (product_id);
+
+-- Recompute the cached products.stock_quantity total from its variants.
+create or replace function public.sync_product_stock_total(p_id text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.products p
+    set stock_quantity = coalesce(
+      (select sum(v.stock_quantity) from public.product_variants v where v.product_id = p_id),
+      0)
+    where p.id = p_id;
+$$;
+
+create or replace function public.touch_product_stock_total()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if tg_op = 'DELETE' then
+    perform public.sync_product_stock_total(old.product_id);
+    return old;
+  else
+    perform public.sync_product_stock_total(new.product_id);
+    if tg_op = 'UPDATE' and new.product_id is distinct from old.product_id then
+      perform public.sync_product_stock_total(old.product_id);
+    end if;
+    return new;
+  end if;
+end;
+$$;
+
+drop trigger if exists product_variants_sync_total on public.product_variants;
+create trigger product_variants_sync_total
+  after insert or update or delete on public.product_variants
+  for each row execute function public.touch_product_stock_total();
+
+-- Server-authoritative per-size stock decrement. Called by the Stripe webhook
+-- once a paid order has been persisted. `greatest(0, …)` guards against going
 -- negative if two concurrent payments race past the checkout-time stock check.
+create or replace function public.decrement_variant_stock(p_id text, p_size text, qty integer)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.product_variants
+    set stock_quantity = greatest(0, stock_quantity - qty)
+    where product_id = p_id and size = p_size;
+$$;
+
+-- Back-compat shim: decrement the product's first/only size. Retained so older
+-- webhook deployments keep functioning during a rollout.
 create or replace function public.decrement_stock(p_id text, qty integer)
 returns void
 language sql
 security definer
 set search_path = public
 as $$
-  update public.products
+  update public.product_variants
     set stock_quantity = greatest(0, stock_quantity - qty)
-    where id = p_id;
+    where id = (
+      select id from public.product_variants
+      where product_id = p_id order by size limit 1
+    );
 $$;
 
 -- ─── Blog posts ────────────────────────────────────────────────────────────
@@ -138,10 +222,11 @@ create trigger on_auth_user_created
 
 -- ─── Row-level security ────────────────────────────────────────────────────
 
-alter table public.collections enable row level security;
-alter table public.products    enable row level security;
-alter table public.blog_posts  enable row level security;
-alter table public.profiles    enable row level security;
+alter table public.collections      enable row level security;
+alter table public.products          enable row level security;
+alter table public.product_variants  enable row level security;
+alter table public.blog_posts        enable row level security;
+alter table public.profiles          enable row level security;
 
 -- Public read access for catalog data.
 drop policy if exists "Public read collections" on public.collections;
@@ -177,6 +262,14 @@ create policy "Admins write collections" on public.collections
 
 drop policy if exists "Admins write products" on public.products;
 create policy "Admins write products" on public.products
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "Public read variants" on public.product_variants;
+create policy "Public read variants" on public.product_variants
+  for select using (true);
+
+drop policy if exists "Admins write variants" on public.product_variants;
+create policy "Admins write variants" on public.product_variants
   for all using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "Admins write blog" on public.blog_posts;

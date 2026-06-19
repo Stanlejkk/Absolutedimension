@@ -18,17 +18,22 @@ export default function Footer() {
 
   const houseLinks = [
     { label: t("footer.links.atelier"), to: "/about" },
-    { label: t("footer.links.sustainability"), to: "/about" },
-    { label: t("footer.links.madeInPoland"), to: "/about" },
+    { label: t("footer.links.smartWardrobe"), to: "/smart-wardrobe" },
+    { label: t("footer.links.source"), to: "/source" },
     { label: t("footer.links.journal"), to: "/blog" },
   ];
 
   const careLinks = [
-    { label: t("footer.links.contact"), to: "/about" },
-    { label: t("footer.links.shipping"), to: "/about" },
-    { label: t("footer.links.returns"), to: "/about" },
-    { label: t("footer.links.sizeGuide"), to: "/about" },
-    { label: t("footer.links.care"), to: "/about" },
+    { label: t("footer.links.contact"), to: "/contact" },
+    { label: t("footer.links.faq"), to: "/faq" },
+    { label: t("footer.links.shipping"), to: "/delivery" },
+    { label: t("footer.links.returns"), to: "/returns" },
+  ];
+
+  const socials = [
+    ["Instagram", "https://www.instagram.com/absolutdimension/"],
+    ["Facebook", "https://www.facebook.com/absolutdimension/"],
+    ["TikTok", "https://www.tiktok.com/@absolutdimension"],
   ];
 
   return (
@@ -55,13 +60,15 @@ export default function Footer() {
               <span className="italic">{t("footer.headlineItalic")}</span>
             </h3>
             <div className="mt-8 flex flex-wrap gap-3">
-              {["Instagram", "Pinterest", "Facebook"].map((s) => (
+              {socials.map(([label, href]) => (
                 <a
-                  key={s}
-                  href="#"
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
                   className="rounded-full border border-bone/20 px-4 py-2 text-xs tracking-wider2 uppercase hover:bg-bone hover:text-ink transition"
                 >
-                  {s}
+                  {label}
                 </a>
               ))}
             </div>
@@ -138,9 +145,9 @@ export default function Footer() {
         <div className="flex flex-wrap items-center justify-between gap-4 pt-10 mt-10 border-t border-bone/10 text-xs tracking-wide text-bone/60">
           <p>© {new Date().getFullYear()} {t("footer.company")} {t("footer.rights")}</p>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-bone">{t("footer.legal.privacy")}</a>
-            <a href="#" className="hover:text-bone">{t("footer.legal.terms")}</a>
-            <a href="#" className="hover:text-bone">{t("footer.legal.cookies")}</a>
+            <Link to="/privacy" className="hover:text-bone">{t("footer.legal.privacy")}</Link>
+            <Link to="/terms" className="hover:text-bone">{t("footer.legal.terms")}</Link>
+            <Link to="/faq" className="hover:text-bone">{t("footer.legal.cookies")}</Link>
           </div>
         </div>
       </div>

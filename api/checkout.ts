@@ -35,6 +35,12 @@ interface ProductRow {
   stock_quantity: number;
 }
 
+interface VariantRow {
+  product_id: string;
+  size: string;
+  stock_quantity: number;
+}
+
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== "POST") return methodNotAllowed("POST");
 
@@ -77,11 +83,28 @@ export default async function handler(req: Request): Promise<Response> {
     const byId = new Map<string, ProductRow>();
     for (const p of products ?? []) byId.set(p.id, p);
 
-    // Aggregate requested quantity per product (same product could appear as
-    // multiple size variants in the cart).
-    const requestedById = new Map<string, number>();
+    // Per-size stock is the source of truth. Pull the variant rows for the
+    // products in this cart and key them by `${productId}::${size}`.
+    const { data: variants, error: variantsError } = await supabase
+      .from("product_variants")
+      .select("product_id, size, stock_quantity")
+      .in("product_id", ids)
+      .returns<VariantRow[]>();
+    if (variantsError) {
+      console.error("checkout: variants fetch", variantsError);
+      return serverError("catalog-unavailable");
+    }
+    const stockBySizeKey = new Map<string, number>();
+    for (const v of variants ?? []) {
+      stockBySizeKey.set(`${v.product_id}::${v.size}`, v.stock_quantity);
+    }
+
+    // Aggregate requested quantity per (product, size) — the same product in two
+    // sizes is two independent stock checks.
+    const requestedByKey = new Map<string, number>();
     for (const item of items) {
-      requestedById.set(item.productId, (requestedById.get(item.productId) ?? 0) + item.quantity);
+      const key = `${item.productId}::${item.size}`;
+      requestedByKey.set(key, (requestedByKey.get(key) ?? 0) + item.quantity);
     }
 
     for (const item of items) {
@@ -90,9 +113,14 @@ export default async function handler(req: Request): Promise<Response> {
       if (item.size && Array.isArray(p.sizes) && p.sizes.length > 0 && !p.sizes.includes(item.size)) {
         return badRequest(`invalid-size:${item.productId}`);
       }
-      const wanted = requestedById.get(item.productId) ?? 0;
-      if (wanted > (p.stock_quantity ?? 0)) {
-        return badRequest(`out-of-stock:${item.productId}`);
+      const key = `${item.productId}::${item.size}`;
+      const wanted = requestedByKey.get(key) ?? 0;
+      // No variant row → fall back to the product-level cached total.
+      const available = stockBySizeKey.has(key)
+        ? stockBySizeKey.get(key)!
+        : p.stock_quantity ?? 0;
+      if (wanted > available) {
+        return badRequest(`out-of-stock:${item.productId}:${item.size}`);
       }
     }
 

@@ -29,8 +29,11 @@ import { useCatalogState } from "./CatalogContext";
 
 /* ─── Resolved types (plain strings for translated fields) ────────────────── */
 
-export interface ResolvedProduct extends Omit<ProductSource, "description"> {
+export interface ResolvedProduct
+  extends Omit<ProductSource, "description" | "materials" | "color"> {
   description: string;
+  materials?: string;
+  color?: string;
 }
 
 export interface ResolvedCollection extends Omit<CollectionSource, "description"> {
@@ -53,7 +56,12 @@ export interface ResolvedBlogPost extends Omit<BlogPostSource, "title" | "excerp
 /* ─── Internal: translate one item ───────────────────────────────────────── */
 
 function resolveProduct(p: ProductSource, pick: (ls: { en: string; pl: string }) => string): ResolvedProduct {
-  return { ...p, description: pick(p.description) };
+  return {
+    ...p,
+    description: pick(p.description),
+    materials: p.materials ? pick(p.materials) : undefined,
+    color: p.color ? pick(p.color) : undefined,
+  };
 }
 
 function resolveCollection(c: CollectionSource, pick: (ls: { en: string; pl: string }) => string): ResolvedCollection {

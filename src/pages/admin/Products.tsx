@@ -1,9 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "../../i18n";
-import { supabase, isSupabaseConfigured, type ProductRow, type CollectionRow } from "../../lib/supabase";
+import {
+  supabase,
+  isSupabaseConfigured,
+  type ProductRow,
+  type CollectionRow,
+  type ProductVariantRow,
+} from "../../lib/supabase";
 import { useFormatPrice } from "../../lib/useCatalog";
 import { useToast } from "../../components/motion/Toast";
 import ImageUpload from "../../components/admin/ImageUpload";
+
+/** Split a comma/whitespace/newline list into trimmed, de-duped size codes. */
+function parseSizes(raw: string): string[] {
+  const seen = new Set<string>();
+  return raw
+    .split(/[,\n]/)
+    .map((s) => s.trim())
+    .filter((s) => s && !seen.has(s) && (seen.add(s), true));
+}
 
 const CATEGORIES = [
   "dress",
@@ -29,12 +44,17 @@ interface FormState {
   category: string;
   collection: string;
   image: string;
+  imagesExtra: string; // additional gallery image URLs, one per line
   sizes: string;
+  stockBySize: Record<string, string>; // size → stock (string for input binding)
   description_en: string;
   description_pl: string;
+  materials_en: string;
+  materials_pl: string;
+  color_en: string;
+  color_pl: string;
   featured: boolean;
   new_arrival: boolean;
-  stock: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -44,12 +64,17 @@ const EMPTY_FORM: FormState = {
   category: CATEGORIES[0],
   collection: "",
   image: "",
+  imagesExtra: "",
   sizes: "",
+  stockBySize: {},
   description_en: "",
   description_pl: "",
+  materials_en: "",
+  materials_pl: "",
+  color_en: "",
+  color_pl: "",
   featured: false,
   new_arrival: false,
-  stock: "0",
 };
 
 export default function AdminProducts() {
@@ -58,6 +83,7 @@ export default function AdminProducts() {
   const { push } = useToast();
   const [rows, setRows] = useState<ProductRow[] | null>(null);
   const [collections, setCollections] = useState<CollectionRow[]>([]);
+  const [variantsByProduct, setVariantsByProduct] = useState<Record<string, Record<string, number>>>({});
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -69,12 +95,18 @@ export default function AdminProducts() {
   const refresh = useMemo(
     () => async () => {
       if (!supabase) return;
-      const [p, c] = await Promise.all([
+      const [p, c, v] = await Promise.all([
         supabase.from("products").select("*").order("name").returns<ProductRow[]>(),
         supabase.from("collections").select("*").order("name").returns<CollectionRow[]>(),
+        supabase.from("product_variants").select("*").returns<ProductVariantRow[]>(),
       ]);
       setRows(p.data ?? []);
       setCollections(c.data ?? []);
+      const byProduct: Record<string, Record<string, number>> = {};
+      for (const row of v.data ?? []) {
+        (byProduct[row.product_id] ??= {})[row.size] = row.stock_quantity;
+      }
+      setVariantsByProduct(byProduct);
     },
     [],
   );
@@ -96,6 +128,10 @@ export default function AdminProducts() {
 
   function openEdit(p: ProductRow) {
     setEditing(p);
+    const variants = variantsByProduct[p.id] ?? {};
+    const stockBySize: Record<string, string> = {};
+    for (const s of p.sizes ?? []) stockBySize[s] = String(variants[s] ?? 0);
+    const extra = (p.images ?? []).filter((u) => u && u !== p.image);
     setForm({
       id: p.id,
       name: p.name,
@@ -103,12 +139,17 @@ export default function AdminProducts() {
       category: p.category,
       collection: p.collection,
       image: p.image,
+      imagesExtra: extra.join("\n"),
       sizes: (p.sizes ?? []).join(", "),
+      stockBySize,
       description_en: p.description_en,
       description_pl: p.description_pl,
+      materials_en: p.materials_en ?? "",
+      materials_pl: p.materials_pl ?? "",
+      color_en: p.color_en ?? "",
+      color_pl: p.color_pl ?? "",
       featured: p.featured,
       new_arrival: p.new_arrival,
-      stock: String(p.stock_quantity ?? 0),
     });
     setError(null);
     setShowForm(true);
@@ -126,16 +167,12 @@ export default function AdminProducts() {
         setSaving(false);
         return;
       }
-      const sizes = form.sizes
-        .split(",")
+      const sizes = parseSizes(form.sizes);
+      const extra = form.imagesExtra
+        .split("\n")
         .map((s) => s.trim())
         .filter(Boolean);
-      const stockQuantity = Math.max(0, Math.floor(Number(form.stock)));
-      if (!Number.isFinite(stockQuantity)) {
-        setError(t("adminPanel.products.errorSaving"));
-        setSaving(false);
-        return;
-      }
+      const images = [form.image, ...extra].filter(Boolean);
       const payload = {
         id: form.id,
         name: form.name,
@@ -143,17 +180,42 @@ export default function AdminProducts() {
         category: form.category,
         collection: form.collection,
         image: form.image,
+        images,
         sizes,
         description_en: form.description_en,
         description_pl: form.description_pl,
+        materials_en: form.materials_en || null,
+        materials_pl: form.materials_pl || null,
+        color_en: form.color_en || null,
+        color_pl: form.color_pl || null,
         featured: form.featured,
         new_arrival: form.new_arrival,
-        stock_quantity: stockQuantity,
+        // stock_quantity is recomputed by the product_variants trigger.
       };
       const res = editing
         ? await supabase.from("products").update(payload).eq("id", editing.id)
         : await supabase.from("products").insert(payload);
       if (res.error) throw res.error;
+
+      // Sync per-size inventory: remove dropped sizes, upsert the current set.
+      const del = await supabase
+        .from("product_variants")
+        .delete()
+        .eq("product_id", form.id)
+        .not("size", "in", `(${sizes.map((s) => `"${s.replace(/"/g, '""')}"`).join(",") || '""'})`);
+      if (del.error) throw del.error;
+      if (sizes.length > 0) {
+        const variantRows = sizes.map((s) => ({
+          product_id: form.id,
+          size: s,
+          stock_quantity: Math.max(0, Math.floor(Number(form.stockBySize[s] ?? 0)) || 0),
+        }));
+        const up = await supabase
+          .from("product_variants")
+          .upsert(variantRows, { onConflict: "product_id,size" });
+        if (up.error) throw up.error;
+      }
+
       push({ title: t("adminPanel.products.savedToast"), kind: "success" });
       setShowForm(false);
       await refresh();
@@ -331,31 +393,60 @@ export default function AdminProducts() {
               uploadLabel={t("adminPanel.products.uploadImage")}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <Field label={t("adminPanel.products.fieldSizes")}>
-                <input
-                  value={form.sizes}
-                  onChange={(e) => setForm({ ...form, sizes: e.target.value })}
-                  className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
-                />
-                <p className="text-xs text-muted mt-1">
-                  {t("adminPanel.products.fieldSizesHint")}
+            <Field label={t("adminPanel.products.fieldImagesExtra")}>
+              <textarea
+                rows={2}
+                value={form.imagesExtra}
+                onChange={(e) => setForm({ ...form, imagesExtra: e.target.value })}
+                className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
+              />
+              <p className="text-xs text-muted mt-1">
+                {t("adminPanel.products.fieldImagesExtraHint")}
+              </p>
+            </Field>
+
+            <Field label={t("adminPanel.products.fieldSizes")}>
+              <input
+                value={form.sizes}
+                onChange={(e) => setForm({ ...form, sizes: e.target.value })}
+                className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
+              />
+              <p className="text-xs text-muted mt-1">
+                {t("adminPanel.products.fieldSizesHint")}
+              </p>
+            </Field>
+
+            {/* Per-size inventory editor */}
+            <div>
+              <span className="text-[10px] tracking-wider2 uppercase text-muted block mb-2">
+                {t("adminPanel.products.fieldStockPerSize")}
+              </span>
+              {parseSizes(form.sizes).length === 0 ? (
+                <p className="text-xs text-muted">
+                  {t("adminPanel.products.fieldStockPerSizeHint")}
                 </p>
-              </Field>
-              <Field label={t("adminPanel.products.fieldStock")}>
-                <input
-                  required
-                  type="number"
-                  step="1"
-                  min="0"
-                  value={form.stock}
-                  onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                  className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
-                />
-                <p className="text-xs text-muted mt-1">
-                  {t("adminPanel.products.fieldStockHint")}
-                </p>
-              </Field>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {parseSizes(form.sizes).map((size) => (
+                    <label key={size} className="flex items-center gap-2 text-sm">
+                      <span className="min-w-12 font-medium">{size}</span>
+                      <input
+                        type="number"
+                        step="1"
+                        min="0"
+                        value={form.stockBySize[size] ?? "0"}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            stockBySize: { ...form.stockBySize, [size]: e.target.value },
+                          })
+                        }
+                        className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm tabular-nums"
+                      />
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
 
             <Field label={t("adminPanel.products.fieldDescriptionEn")}>
@@ -376,6 +467,37 @@ export default function AdminProducts() {
                 className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
               />
             </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label={t("adminPanel.products.fieldMaterialsEn")}>
+                <input
+                  value={form.materials_en}
+                  onChange={(e) => setForm({ ...form, materials_en: e.target.value })}
+                  className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
+                />
+              </Field>
+              <Field label={t("adminPanel.products.fieldMaterialsPl")}>
+                <input
+                  value={form.materials_pl}
+                  onChange={(e) => setForm({ ...form, materials_pl: e.target.value })}
+                  className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
+                />
+              </Field>
+              <Field label={t("adminPanel.products.fieldColorEn")}>
+                <input
+                  value={form.color_en}
+                  onChange={(e) => setForm({ ...form, color_en: e.target.value })}
+                  className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
+                />
+              </Field>
+              <Field label={t("adminPanel.products.fieldColorPl")}>
+                <input
+                  value={form.color_pl}
+                  onChange={(e) => setForm({ ...form, color_pl: e.target.value })}
+                  className="w-full border border-ink/15 bg-transparent px-3 py-2 text-sm"
+                />
+              </Field>
+            </div>
 
             <div className="flex gap-6">
               <label className="flex items-center gap-2 text-sm">

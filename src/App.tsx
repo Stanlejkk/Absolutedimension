@@ -17,6 +17,14 @@ import Collection from "./pages/Collection";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import About from "./pages/About";
+import SmartWardrobe from "./pages/SmartWardrobe";
+import Source from "./pages/Source";
+import Contact from "./pages/Contact";
+import Faq from "./pages/Faq";
+import Delivery from "./pages/Delivery";
+import Returns from "./pages/Returns";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
@@ -59,6 +67,14 @@ export default function App() {
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/blog/:slug" element={<BlogPost />} />
                     <Route path="/about" element={<About />} />
+                    <Route path="/smart-wardrobe" element={<SmartWardrobe />} />
+                    <Route path="/source" element={<Source />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/faq" element={<Faq />} />
+                    <Route path="/delivery" element={<Delivery />} />
+                    <Route path="/returns" element={<Returns />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/checkout/success" element={<CheckoutSuccess />} />

@@ -153,16 +153,18 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session): Promise
     }
   }
 
-  // Decrement stock for each known product. Failures here are logged but not
-  // thrown — the order is already paid and persisted; Stripe should not retry.
+  // Decrement per-size stock for each known product. Failures here are logged
+  // but not thrown — the order is already paid and persisted; Stripe should not
+  // retry. The trigger on product_variants keeps products.stock_quantity in sync.
   for (const row of rows) {
     if (!row.product_id) continue;
-    const dec = await supabase.rpc("decrement_stock", {
+    const dec = await supabase.rpc("decrement_variant_stock", {
       p_id: row.product_id,
+      p_size: row.size ?? "",
       qty: row.quantity,
     });
     if (dec.error) {
-      console.error("stripe-webhook: decrement_stock", row.product_id, dec.error);
+      console.error("stripe-webhook: decrement_variant_stock", row.product_id, row.size, dec.error);
     }
   }
 

@@ -31,6 +31,7 @@ export default function Navbar() {
       { label: t("nav.collections"), to: "/collections" },
       { label: t("nav.atelier"), to: "/about" },
       { label: t("nav.editorial"), to: "/blog" },
+      { label: t("nav.contact"), to: "/contact" },
     ],
     [t],
   );

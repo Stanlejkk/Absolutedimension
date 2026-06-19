@@ -10,3 +10,8 @@ dist-verify
 # scratch + transient build artefacts
 _scratch_trash/
 vite.config.ts.timestamp-*.mjs
+
+# catalog ingestion cache (scripts/ingest-absolutdimension.ts)
+.ingest-tmp/
+.env.local
+.env
