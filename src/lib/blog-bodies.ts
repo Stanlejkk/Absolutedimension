@@ -3,7 +3,8 @@
  *
  * The bodies live here (rather than inside data.ts) so that the catalog file
  * stays focused on metadata. Each block is rendered by <BlogPost> via a
- * small switch on `type`.
+ * small switch on `type`. These mirror the real "The Art of Refined Dressing"
+ * journal at absolutdimension.com — poetic, fragmentary, intentionally quiet.
  */
 
 import type { LocalizedString } from "../i18n";
@@ -16,229 +17,206 @@ export type BlogBlock =
   | { type: "signoff"; text: LocalizedString };
 
 export const blogBodies: Record<string, BlogBlock[]> = {
-  /* ─────────────────────────── The Art of Dressing ───────────────────────── */
-  "sztuka-ubioru": [
+  /* ───────────────────────────── . S i l e n t . ─────────────────────────── */
+  "s-i-l-e-n-t": [
     {
       type: "lead",
       text: {
-        en: "Clothing is more than fabric. It is the first sentence you write each morning — quiet or emphatic, borrowed or original — before any word leaves your mouth.",
-        pl: "Ubiór to coś więcej niż tkanina. To pierwsze zdanie, które piszesz każdego ranka – ciche lub wyraziste, pożyczone lub własne – zanim padnie pierwsze słowo.",
+        en: "Silence. This is where you are born. The right one. You don’t scream. You don’t have to. What is yours simply flows out.",
+        pl: "Cisza. To tutaj się rodzisz. Ta właściwa. Nie krzyczysz. Nie musisz. To, co Twoje, po prostu wypływa.",
       },
     },
     {
       type: "p",
       text: {
-        en: "At Absolut Dimension we treat dressing as a discipline, not a decoration. We are less interested in trend than in tone: what does the cloth want to do, how does a shoulder sit when the person inside it relaxes, what happens to a hem after a hundred wearings. Those are the questions that begin every piece we make.",
-        pl: "W Absolut Dimension traktujemy ubieranie się jak dyscyplinę, nie jak dekorację. Mniej zajmuje nas trend, bardziej ton: do czego dąży tkanina, jak układa się rami gdy osoba w środku się odpręża, co dzieje się z rąbkiem po stu noszeniach. Od tych pytań zaczyna się każdy nasz model.",
+        en: "Before the day asks anything of you, there is a quiet hour that belongs only to you. No noise, no audience — just the body waking and the slow decision of who you will be today.",
+        pl: "Zanim dzień czegokolwiek od Ciebie zażąda, istnieje cicha godzina, która należy tylko do Ciebie. Bez hałasu, bez widowni — tylko budzące się ciało i powolna decyzja, kim dziś będziesz.",
       },
     },
     {
       type: "p",
       text: {
-        en: "A well-made garment is a quiet kind of confidence. It does not shout to be noticed — it holds its shape, holds your shape, and gives the person wearing it room to think about something other than their clothes. That is the greatest luxury we know.",
-        pl: "Dobrze uszyte ubranie jest cichą formą pewności siebie. Nie krzyczy, aby je zauważono – trzyma swoją formę, trzyma Twoją sylwetkę, i daje osobie, która je nosi, przestrzeń by myśleć o czymś innym niż o ubraniu. To największy luksus, jaki znamy.",
-      },
-    },
-    {
-      type: "h2",
-      text: {
-        en: "The wardrobe as a conversation",
-        pl: "Garderoba jako rozmowa",
-      },
-    },
-    {
-      type: "p",
-      text: {
-        en: "We build our collections as chapters. Monaco leans into summer light; New York into structure; Paris into the elegance of a long afternoon. Together they form a wardrobe that speaks in a consistent voice — adaptable across climates, seasons, and the small ceremonies of daily life.",
-        pl: "Budujemy nasze kolekcje jak rozdziały. Monaco skłania się ku letniemu światłu; Nowy Jork ku strukturze; Paryż ku elegancji długiego popołudnia. Razem tworzą garderobę, która mówi jednym, konsekwentnym głosem – dopasowuje się do klimatów, sezonów, i drobnych ceremonii codzienności.",
+        en: "We dress from that silence, not against it. A form that does not perform. A fabric that lets you breathe. Presence rather than display — the truth of a feeling instead of a trend.",
+        pl: "Ubieramy się z tej ciszy, a nie wbrew niej. Forma, która nie odgrywa roli. Tkanina, która pozwala oddychać. Obecność zamiast pokazu — prawda uczucia zamiast trendu.",
       },
     },
     {
       type: "quote",
       text: {
-        en: "True elegance is not what you wear, but how you feel wearing it.",
-        pl: "Prawdziwa elegancja to nie to, co nosisz, ale jak się w tym czujesz.",
+        en: "Paradise exists within you.",
+        pl: "Raj istnieje w Tobie.",
       },
     },
-    {
-      type: "p",
-      text: {
-        en: "If our clothes do their work, you will forget they are there. And when you come back to them, season after season, they will still be ready — slightly softer at the edges, more themselves, more yours.",
-        pl: "Jeśli nasze ubrania wykonują swoją pracę, przestajesz zauważać, że je masz na sobie. A gdy wracasz do nich, sezon po sezonie, wciąż będą gotowe – delikatnie zmiękczone na brzegach, bardziej sobą, bardziej Twoje.",
-      },
-    },
-    {
-      type: "signoff",
-      text: { en: "— The atelier", pl: "— Atelier" },
-    },
+    { type: "signoff", text: { en: "— Absolut Dimension", pl: "— Absolut Dimension" } },
   ],
 
-  /* ─────────────────────── Behind the Monaco Collection ──────────────────── */
-  "monaco-collection-story": [
+  /* ───────────────────────── . LIFE is about STYLE . ─────────────────────── */
+  "life-is-about-style": [
     {
       type: "lead",
       text: {
-        en: "The Monaco Collection began as a photograph — bright blue sea, a limestone wall, and the blur of a linen jacket crossing the frame at four in the afternoon.",
-        pl: "Kolekcja Monaco zaczęła się od fotografii – błękit morza, mur z wapienia i rozmyta sylwetka lnianej marynarki przecinającej kadr o czwartej po południu.",
+        en: "Our dreams are worthy. Our value is meaningful. Life is about your style.",
+        pl: "Nasze marzenia są wartościowe. Nasza wartość ma znaczenie. Życie jest o Twoim stylu.",
       },
     },
     {
       type: "p",
       text: {
-        en: "Before a single pattern was cut we spent two weeks on the Riviera, looking. Not shopping — looking. How do women carry themselves on the Cap after lunch? What colour does ivory take on at five in the afternoon, against weathered stone? Where do shoulders settle when the air is warm and the evening is still unwritten?",
-        pl: "Zanim narysowaliśmy pierwszy wykrój, spędziliśmy dwa tygodnie na Riwierze, obserwując. Nie robiąc zakupów – patrząc. Jak kobiety noszą się na Cap po lunchu? Jaki kolor przyjmuje kość słoniowa o piątej po południu, na tle poszarzałego kamienia? Gdzie opadają ramiona, gdy powietrze jest ciepłe, a wieczór jest jeszcze nienapisany?",
-      },
-    },
-    {
-      type: "h2",
-      text: { en: "From observation to cloth", pl: "Od obserwacji do tkaniny" },
-    },
-    {
-      type: "p",
-      text: {
-        en: "We returned to Warsaw with a folder of photographs, a dozen swatches, and the conviction that Monaco had to be built around four fabrics: a milk-coloured silk crêpe, a dry cotton-linen from Biella, a heavier ivory twill for tailoring, and a single feather-weight knit for the evenings when the wind turns.",
-        pl: "Wróciliśmy do Warszawy z teczką zdjęć, tuzinem próbek i przekonaniem, że Monaco musi opierać się na czterech tkaninach: jedwabnej krepie w kolorze mleka, suchej bawełnie z lnem z Bielli, cięższym diagonalu w odcieniu kości słoniowej na modele krawieckie oraz jednej, lekkiej jak pióro dzianinie na wieczory, gdy wiatr się zmienia.",
+        en: "Style is not what others approve of. It is what happens when you stop asking. When you connect with your own self, you synchronise with the living, creative element of life.",
+        pl: "Styl to nie to, co inni akceptują. To, co dzieje się, gdy przestajesz pytać. Kiedy łączysz się z własnym „ja”, synchronizujesz się z żywym, twórczym pierwiastkiem życia.",
       },
     },
     {
       type: "p",
       text: {
-        en: "The palette followed. Ivory and milk and gold — the colours of limestone at different hours — with a single accent of dark bordeaux for the evening pieces. Nothing loud. Nothing that apologises for itself, either.",
-        pl: "Paleta wyłoniła się naturalnie. Kość słoniowa, mleko, złoto – kolory wapienia o różnych porach dnia – z jednym akcentem ciemnego bordo na modelach wieczorowych. Nic krzykliwego. I nic, co tłumaczyłoby się ze swojej obecności.",
+        en: "So we invite ourselves back to ourselves. We choose forms that hold this invitation open — light, free, unmistakably our own.",
+        pl: "Więc zapraszamy siebie z powrotem do siebie. Wybieramy formy, które utrzymują to zaproszenie otwartym — lekkie, wolne, niewątpliwie własne.",
       },
     },
     {
       type: "quote",
-      text: {
-        en: "Monaco taught us that luxury is mostly about what you choose to leave out.",
-        pl: "Monaco nauczyło nas, że luksus w większości polega na tym, co postanawiasz pominąć.",
-      },
+      text: { en: "I invite my Self to me.", pl: "Zapraszam moje „Ja” do siebie." },
     },
-    {
-      type: "p",
-      text: {
-        en: "Some of the pieces arrived quickly — the Monaco blouse was cut in a single afternoon. Others took months. The Suknia Absolut Monaco went through eleven toiles before the neckline settled. We only release a piece when it has stopped arguing with us.",
-        pl: "Niektóre modele powstały szybko – bluzka Monaco została skrojona w ciągu jednego popołudnia. Inne zajęły miesiące. Suknia Absolut Monaco przeszła jedenaście próbnych wersji, zanim dekolt wreszcie się ułożył. Wypuszczamy model dopiero wtedy, gdy przestaje się z nami spierać.",
-      },
-    },
-    {
-      type: "signoff",
-      text: { en: "— The atelier", pl: "— Atelier" },
-    },
+    { type: "signoff", text: { en: "— Absolut Dimension", pl: "— Absolut Dimension" } },
   ],
 
-  /* ───────────────────────── Sustainable Luxury ─────────────────────────── */
-  "sustainable-luxury": [
+  /* ──────────────────── Journey . The Way to Yourself ────────────────────── */
+  "journey-droga-do-siebie": [
     {
       type: "lead",
       text: {
-        en: "Sustainability, for us, is not a marketing claim. It is a series of practical choices, made every day, about where the cloth comes from, who sews it, and how long it will last.",
-        pl: "Zrównoważony rozwój nie jest dla nas hasłem marketingowym. To seria praktycznych decyzji podejmowanych każdego dnia – o tym, skąd pochodzi tkanina, kto ją zszywa i jak długo posłuży.",
+        en: "SM.ART Wardrobe — Winter in Paris. A journey is not only a place; it is a way back to yourself.",
+        pl: "Garderoba SM.ART — Zima w Paryżu. Podróż to nie tylko miejsce; to droga powrotna do siebie.",
       },
     },
     {
       type: "p",
       text: {
-        en: "We make small runs. Nothing is mass-produced. A typical piece is made in between forty and two hundred units — sometimes fewer. If a model sells out, we often bring it back the following season, quietly, in the same cut.",
-        pl: "Szyjemy w krótkich seriach. Nic nie powstaje masowo. Typowy model to od czterdziestu do dwustu sztuk – czasem mniej. Jeśli coś się wyprzedaje, często wracamy do tego modelu w kolejnym sezonie, w tym samym kroju, bez rozgłosu.",
+        en: "This season turns to dark chocolate brown — a colour that grounds and envelops, opulent and understated at once. It is the palette of a long winter afternoon spent unhurried.",
+        pl: "Ten sezon zwraca się ku ciemnemu czekoladowemu brązowi — kolorowi, który uziemia i otula, jednocześnie wystawnemu i powściągliwemu. To paleta długiego, zimowego popołudnia spędzonego bez pośpiechu.",
       },
     },
     {
       type: "h2",
-      text: {
-        en: "Mills we know by name",
-        pl: "Tkalnie, które znamy z nazwy",
-      },
+      text: { en: "A journal of eight moments", pl: "Dziennik ośmiu chwil" },
     },
     {
       type: "p",
       text: {
-        en: "Our wool comes from Biella, where the families who weave it have been doing so for generations. Our silk is milled in Como. Our linen is grown in the north — in Normandy and Belgium. We visit these mills, we know their managers, and we understand how the cloth is finished before it ever reaches our cutting table.",
-        pl: "Nasza wełna pochodzi z Bielli, gdzie rodziny tkaczy prowadzą swoje zakłady od pokoleń. Jedwab tkany jest w Como. Len uprawiany na północy – w Normandii i Belgii. Odwiedzamy te tkalnie, znamy ich właścicieli i rozumiemy, jak wykończona jest tkanina, zanim trafi na nasz stół krojczy.",
-      },
-    },
-    {
-      type: "p",
-      text: {
-        en: "The garments are cut and sewn in our Warsaw atelier. Our seamstresses are employed, paid fairly, and work in daylight rooms. This is unspectacular to say out loud — and that is precisely the point.",
-        pl: "Modele krojone i szyte są w naszym warszawskim atelier. Nasze krawcowe są zatrudnione na stałe, wynagradzane uczciwie i pracują w jasnych, przeszklonych salach. Mówienie o tym głośno jest mało efektowne – i właśnie o to nam chodzi.",
+        en: "Walking. The library. Café de Flore. The Hotel Bvlgari. The Hemingway Bar. Each moment asks for the same wardrobe worn differently — layered, re-proportioned, never repeated.",
+        pl: "Spacer. Biblioteka. Café de Flore. Hotel Bvlgari. Hemingway Bar. Każda z tych chwil prosi o tę samą garderobę noszoną inaczej — warstwowo, w zmienionych proporcjach, nigdy tak samo.",
       },
     },
     {
       type: "quote",
       text: {
-        en: "The most sustainable garment is the one you wear for thirty years.",
-        pl: "Najbardziej zrównoważone ubranie to takie, które nosisz przez trzydzieści lat.",
+        en: "The same wardrobe, eight lives. That is the whole idea.",
+        pl: "Ta sama garderoba, osiem żyć. Na tym polega cała idea.",
       },
     },
-    {
-      type: "p",
-      text: {
-        en: "Care is part of the design. Our pieces come with instructions that assume you intend to keep them. Hems can be adjusted. Linings can be replaced. If something tears at the shoulder, bring it back — we will repair it. A wardrobe should grow old with you, not be replaced around you.",
-        pl: "Pielęgnacja jest częścią projektu. Każdy model przychodzi z instrukcjami, które zakładają, że zamierzasz go zachować. Rąbki można poprawić. Podszewki wymienić. Jeśli coś rozedrze się na ramieniu, przynieś to do nas – naprawimy. Garderoba powinna starzeć się razem z Tobą, a nie być co chwilę wymieniana.",
-      },
-    },
-    {
-      type: "signoff",
-      text: { en: "— The atelier", pl: "— Atelier" },
-    },
+    { type: "signoff", text: { en: "— Absolut Dimension", pl: "— Absolut Dimension" } },
   ],
 
-  /* ────────────────────── The Evening Styling Guide ──────────────────────── */
-  "evening-styling-guide": [
+  /* ───────────────────────────── . WomenWorld . ─────────────────────────── */
+  "womenworld": [
     {
       type: "lead",
       text: {
-        en: "Evening dressing begins, counter-intuitively, in the afternoon. The light is gentler, the choices are slower, and a piece that will be worn under chandeliers benefits from an hour of daylight on its skin.",
-        pl: "Wieczorowe ubieranie się zaczyna się – paradoksalnie – po południu. Światło jest łagodniejsze, decyzje powolniejsze, a model, który będzie noszony pod żyrandolami, skorzysta z godziny dziennego światła na swojej tkaninie.",
+        en: "A woman creates. Produces. Begets. She stands in true power.",
+        pl: "Kobieta tworzy. Wytwarza. Rodzi. Stoi w prawdziwej sile.",
       },
     },
     {
       type: "p",
       text: {
-        en: "Lay the garment flat. Look at it without jewellery, without shoes, without the rest of the outfit. Is the silhouette what you remembered? Has the hem dropped? Does the collar still break cleanly? These are the quiet questions that separate a good evening from a long one.",
-        pl: "Rozłóż model płasko. Popatrz na niego bez biżuterii, bez butów, bez reszty stroju. Czy sylwetka jest taka, jak ją pamiętasz? Czy rąbek nie opadł? Czy kołnierz wciąż układa się równo? To są te ciche pytania, które odróżniają udany wieczór od długiego.",
+        en: "This letter is personal. It carries a mother’s dream once set aside, and the long, quiet survival that women so often hold without being seen.",
+        pl: "Ten list jest osobisty. Niesie marzenie matki kiedyś odłożone na bok oraz długie, ciche przetrwanie, które kobiety tak często dźwigają niezauważone.",
       },
-    },
-    {
-      type: "h2",
-      text: { en: "Cocktail hour", pl: "Godzina koktajlowa" },
     },
     {
       type: "p",
       text: {
-        en: "For a drinks-party or private gallery opening, lean into tailoring rather than decoration. A Żakiet M'Antoine over a Body Maturite, a high trouser, a low shoe. Keep the jewellery to a single earring or a single bracelet — the piece that catches the light when you raise a glass.",
-        pl: "Na przyjęcie koktajlowe lub prywatny wernisaż postaw na krawiectwo, nie dekorację. Żakiet M'Antoine na Body Maturite, wysokie spodnie, niski but. Biżuterię ogranicz do jednego kolczyka lub jednej bransoletki – tej jednej, która chwyci światło, gdy podniesiesz kieliszek.",
-      },
-    },
-    {
-      type: "h2",
-      text: { en: "The gala", pl: "Gala" },
-    },
-    {
-      type: "p",
-      text: {
-        en: "Here you can let a piece do the work. A full gown — the Suknia Henriqua Amour, the Impératrice — needs almost nothing around it. A bag that carries a lipstick and nothing else. A clean sweep of hair. Perfume applied once, in the morning, to the inside of the wrist and left to settle.",
-        pl: "Tutaj możesz pozwolić, by to model wykonał całą pracę. Pełna suknia – Henriqua Amour, Impératrice – prawie niczego wokół siebie nie potrzebuje. Torebka na pomadkę i nic więcej. Spokojnie upięte włosy. Perfumy nałożone raz, rano, na wewnętrzną stronę nadgarstka i pozostawione, by się ułożyły.",
+        en: "It was in Africa that the first dresses were knitted by hand — creations turned into garments. “I put on these dresses, and I felt myself.” The brand was born from that sentence.",
+        pl: "To w Afryce pierwsze sukienki powstały, dziergane ręcznie — twórczość zamieniona w ubranie. „Założyłam te sukienki i poczułam siebie.” Z tego zdania narodziła się marka.",
       },
     },
     {
       type: "quote",
       text: {
-        en: "Dress for the room you are entering, not the one you are leaving.",
-        pl: "Ubieraj się do pokoju, do którego wchodzisz, nie do tego, z którego wychodzisz.",
+        en: "I put on these dresses, and I felt myself.",
+        pl: "Założyłam te sukienki i poczułam siebie.",
+      },
+    },
+    { type: "signoff", text: { en: "— Absolut Dimension", pl: "— Absolut Dimension" } },
+  ],
+
+  /* ─────────────────── The Art of Coherence = TOTAL LOOK ─────────────────── */
+  "sztuka-spojnosci-total-look": [
+    {
+      type: "lead",
+      text: {
+        en: "In the world of luxury fashion, consistency isn’t a limitation — it’s a strength. A total look is a statement.",
+        pl: "W świecie luksusowej mody spójność nie jest ograniczeniem — jest siłą. Total look to manifest.",
       },
     },
     {
       type: "p",
       text: {
-        en: "A last note. Evening dressing is a form of hospitality. You are making the room easier to be in for everyone else in it. That is the kindest thing an outfit can do.",
-        pl: "Ostatnia uwaga. Wieczorowe ubieranie się jest formą gościnności. Sprawiasz, że pokój, w którym się znajdujesz, staje się przyjemniejszy dla wszystkich innych. To najmilsza rzecz, jaką strój może zrobić.",
+        en: "Dress, accessories, jacket, jewellery — when each element answers to the same idea, the whole becomes quieter and more powerful than any single piece. Nothing competes. Everything agrees.",
+        pl: "Sukienka, dodatki, żakiet, biżuteria — gdy każdy element odpowiada tej samej idei, całość staje się cichsza i mocniejsza niż jakikolwiek pojedynczy element. Nic nie rywalizuje. Wszystko się zgadza.",
       },
     },
     {
-      type: "signoff",
-      text: { en: "— The atelier", pl: "— Atelier" },
+      type: "p",
+      text: {
+        en: "This is the principle behind the SM.ART Wardrobe: pieces designed to coexist, so that building a complete look is a matter of composition, not compromise.",
+        pl: "To zasada stojąca za Garderobą SM.ART: elementy zaprojektowane, by współistnieć, tak by zbudowanie pełnej stylizacji było kwestią kompozycji, a nie kompromisu.",
+      },
     },
+    {
+      type: "quote",
+      text: {
+        en: "A total look is not more. It is coherent.",
+        pl: "Total look to nie więcej. To spójność.",
+      },
+    },
+    { type: "signoff", text: { en: "— Absolut Dimension", pl: "— Absolut Dimension" } },
+  ],
+
+  /* ─────────────────── Packing — the nightmare of travel ─────────────────── */
+  "doha": [
+    {
+      type: "lead",
+      text: {
+        en: "There is no emergency closet on the road. You only have a suitcase — and beside it, you can feel naked.",
+        pl: "W podróży nie ma awaryjnej szafy. Masz tylko walizkę — a obok niej można poczuć się nago.",
+      },
+    },
+    {
+      type: "p",
+      text: {
+        en: "Packing anxiety is real. It was, in fact, the problem that led to the SM.ART Wardrobe: a small set of forms that combine endlessly, so a single case can hold a whole life of occasions.",
+        pl: "Lęk przed pakowaniem jest prawdziwy. To właśnie ten problem doprowadził do Garderoby SM.ART: niewielkiego zestawu form, które łączą się bez końca, tak by jedna walizka pomieściła całe życie okazji.",
+      },
+    },
+    {
+      type: "h2",
+      text: { en: "Six questions before you pack", pl: "Sześć pytań przed pakowaniem" },
+    },
+    {
+      type: "p",
+      text: {
+        en: "Intention. Destination. Temperature. Duration. Where you’ll stay. What you’ll do. Answer these, and the suitcase almost packs itself — Walk-On-My.Self, Break-Coffee, Diary Time.",
+        pl: "Intencja. Cel. Temperatura. Czas trwania. Gdzie zamieszkasz. Co będziesz robić. Odpowiedz na nie, a walizka spakuje się niemal sama — Walk-On-My.Self, Break-Coffee, Diary Time.",
+      },
+    },
+    {
+      type: "quote",
+      text: {
+        en: "Travel light, arrive yourself.",
+        pl: "Podróżuj lekko, przybądź sobą.",
+      },
+    },
+    { type: "signoff", text: { en: "— Absolut Dimension", pl: "— Absolut Dimension" } },
   ],
 };

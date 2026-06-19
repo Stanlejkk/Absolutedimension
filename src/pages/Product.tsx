@@ -75,22 +75,28 @@ export default function Product() {
   }
 
   const related = collectionProducts.filter((p) => p.id !== product.id).slice(0, 4);
-  // Until products carry multiple photos, repeat the hero asset for the
-  // thumbnail rail + stacked gallery. When data grows, swap `gallery` for
-  // `product.images`.
-  const gallery = [product.image, product.image, product.image];
+  // Real product photography — fall back to the hero asset if a product only
+  // carries a single image.
+  const gallery =
+    product.images && product.images.length > 0 ? product.images : [product.image];
 
-  const soldOut = product.stockQuantity === 0;
+  const sizeStock = (s: string): number => product.stockBySize?.[s] ?? 0;
+  const hasStockData = product.stockBySize && Object.keys(product.stockBySize).length > 0;
+  // A size with no recorded stock entry is treated as available (seed fallback);
+  // an explicit 0 means that size is sold out.
+  const sizeAvailable = (s: string): boolean =>
+    !hasStockData || product.stockBySize?.[s] === undefined || sizeStock(s) > 0;
+  const soldOut = hasStockData && product.sizes.length > 0 && product.sizes.every((s) => !sizeAvailable(s));
 
   const handleAdd = () => {
-    if (!selectedSize || soldOut) return;
+    if (!selectedSize || soldOut || !sizeAvailable(selectedSize)) return;
     addItem({
       productId: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
       size: selectedSize,
-      stockLimit: product.stockQuantity,
+      stockLimit: hasStockData ? sizeStock(selectedSize) : undefined,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -250,16 +256,21 @@ export default function Product() {
               <div className="flex flex-wrap gap-2">
                 {product.sizes.map((s) => {
                   const isSelected = selectedSize === s;
+                  const available = sizeAvailable(s);
                   return (
                     <motion.button
                       key={s}
                       type="button"
-                      onClick={() => setSelectedSize(s)}
-                      whileHover={{ y: -2 }}
-                      whileTap={{ scale: 0.97 }}
+                      disabled={!available}
+                      onClick={() => available && setSelectedSize(s)}
+                      whileHover={available ? { y: -2 } : undefined}
+                      whileTap={available ? { scale: 0.97 } : undefined}
                       transition={{ type: "spring", stiffness: 420, damping: 22 }}
-                      className={`min-w-14 h-[46px] px-4 text-[13px] font-medium tracking-[0.05em] transition-colors ${
-                        isSelected
+                      aria-label={available ? s : `${s} — ${t("adminPanel.products.soldOut")}`}
+                      className={`relative min-w-14 h-[46px] px-4 text-[13px] font-medium tracking-[0.05em] transition-colors ${
+                        !available
+                          ? "bg-transparent text-ink/30 border border-ink/10 cursor-not-allowed line-through"
+                          : isSelected
                           ? "bg-ink text-bone border border-ink"
                           : "bg-transparent text-ink border border-ink/20 hover:border-ink"
                       }`}
@@ -317,7 +328,12 @@ export default function Product() {
             {/* Accordions */}
             <div className="mt-10">
               <Accordion title={t("product.materials")}>
-                <p>{t("product.materialsBody")}</p>
+                <p>{product.materials ?? t("product.materialsBody")}</p>
+                {product.color && (
+                  <p className="mt-2">
+                    {t("product.colorLabel")}: {product.color}
+                  </p>
+                )}
                 <p className="mt-2 text-[12px] tracking-[0.15em] uppercase text-muted font-medium">
                   {t("product.madeIn")}
                 </p>

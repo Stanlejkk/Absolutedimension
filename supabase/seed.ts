@@ -46,8 +46,20 @@ lines.push("");
 lines.push("-- Products");
 for (const p of products) {
   lines.push(
-    sql`insert into public.products (id, name, price, category, collection, image, description_en, description_pl, sizes, featured, new_arrival) values (${escape(p.id)}, ${escape(p.name)}, ${escape(p.price)}, ${escape(p.category)}, ${escape(p.collection)}, ${escape(p.image)}, ${escape(p.description.en)}, ${escape(p.description.pl)}, ${escape(p.sizes)}, ${escape(Boolean(p.featured))}, ${escape(Boolean(p.newArrival))}) on conflict (id) do update set name=excluded.name, price=excluded.price, category=excluded.category, collection=excluded.collection, image=excluded.image, description_en=excluded.description_en, description_pl=excluded.description_pl, sizes=excluded.sizes, featured=excluded.featured, new_arrival=excluded.new_arrival;`,
+    sql`insert into public.products (id, name, price, category, collection, image, images, description_en, description_pl, sizes, featured, new_arrival, materials_en, materials_pl, color_en, color_pl) values (${escape(p.id)}, ${escape(p.name)}, ${escape(p.price)}, ${escape(p.category)}, ${escape(p.collection)}, ${escape(p.image)}, ${escape(p.images ?? [p.image])}, ${escape(p.description.en)}, ${escape(p.description.pl)}, ${escape(p.sizes)}, ${escape(Boolean(p.featured))}, ${escape(Boolean(p.newArrival))}, ${escape(p.materials?.en ?? null)}, ${escape(p.materials?.pl ?? null)}, ${escape(p.color?.en ?? null)}, ${escape(p.color?.pl ?? null)}) on conflict (id) do update set name=excluded.name, price=excluded.price, category=excluded.category, collection=excluded.collection, image=excluded.image, images=excluded.images, description_en=excluded.description_en, description_pl=excluded.description_pl, sizes=excluded.sizes, featured=excluded.featured, new_arrival=excluded.new_arrival, materials_en=excluded.materials_en, materials_pl=excluded.materials_pl, color_en=excluded.color_en, color_pl=excluded.color_pl;`,
   );
+}
+lines.push("");
+
+lines.push("-- Product variants (per-size stock). The trigger keeps");
+lines.push("-- products.stock_quantity in sync as these rows land.");
+for (const p of products) {
+  for (const size of p.sizes) {
+    const qty = p.stockBySize?.[size] ?? 0;
+    lines.push(
+      sql`insert into public.product_variants (product_id, size, stock_quantity) values (${escape(p.id)}, ${escape(size)}, ${escape(qty)}) on conflict (product_id, size) do update set stock_quantity=excluded.stock_quantity;`,
+    );
+  }
 }
 lines.push("");
 

@@ -22,6 +22,7 @@ import {
   type BlogPostRow,
   type CollectionRow,
   type ProductRow,
+  type ProductVariantRow,
 } from "./supabase";
 import type { BlogBlock } from "./blog-bodies";
 
@@ -48,19 +49,31 @@ export interface CatalogState {
 
 const CatalogContext = createContext<CatalogState | null>(null);
 
-function productFromRow(r: ProductRow): Product {
+function productFromRow(r: ProductRow, stockBySize: Record<string, number>): Product {
+  const images = r.images && r.images.length > 0 ? r.images : r.image ? [r.image] : [];
+  const total = Object.values(stockBySize).reduce((s, n) => s + n, 0);
   return {
     id: r.id,
     name: r.name,
     price: r.price,
     category: r.category as ProductCategory,
     collection: r.collection,
-    image: r.image,
+    image: r.image || images[0] || "",
+    images: images.length > 0 ? images : [r.image || ""],
     description: { en: r.description_en, pl: r.description_pl },
     sizes: r.sizes ?? [],
+    stockBySize,
     featured: r.featured || undefined,
     newArrival: r.new_arrival || undefined,
-    stockQuantity: typeof r.stock_quantity === "number" ? r.stock_quantity : undefined,
+    materials:
+      r.materials_en || r.materials_pl
+        ? { en: r.materials_en ?? r.materials_pl ?? "", pl: r.materials_pl ?? r.materials_en ?? "" }
+        : undefined,
+    color:
+      r.color_en || r.color_pl
+        ? { en: r.color_en ?? r.color_pl ?? "", pl: r.color_pl ?? r.color_en ?? "" }
+        : undefined,
+    stockQuantity: Object.keys(stockBySize).length > 0 ? total : r.stock_quantity ?? undefined,
   };
 }
 
@@ -100,8 +113,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
     const client = supabase;
     (async () => {
-      const [productsRes, collectionsRes, blogRes] = await Promise.all([
+      const [productsRes, variantsRes, collectionsRes, blogRes] = await Promise.all([
         client.from("products").select("*").returns<ProductRow[]>(),
+        client.from("product_variants").select("*").returns<ProductVariantRow[]>(),
         client.from("collections").select("*").returns<CollectionRow[]>(),
         client
           .from("blog_posts")
@@ -113,7 +127,16 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
 
       if (!productsRes.error && productsRes.data && productsRes.data.length > 0) {
-        setProducts(productsRes.data.map(productFromRow));
+        // Group per-size stock by product so each Product carries a stockBySize map.
+        const stockByProduct = new Map<string, Record<string, number>>();
+        for (const v of variantsRes.data ?? []) {
+          const m = stockByProduct.get(v.product_id) ?? {};
+          m[v.size] = v.stock_quantity;
+          stockByProduct.set(v.product_id, m);
+        }
+        setProducts(
+          productsRes.data.map((r) => productFromRow(r, stockByProduct.get(r.id) ?? {})),
+        );
       }
       if (!collectionsRes.error && collectionsRes.data && collectionsRes.data.length > 0) {
         setCollections(collectionsRes.data.map(collectionFromRow));

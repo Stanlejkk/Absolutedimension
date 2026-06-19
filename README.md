@@ -2,6 +2,8 @@
 
 A React + TypeScript + Vite site for the SM.ART wardrobe concept, styled with Tailwind CSS and animated with Framer Motion.
 
+The bundled catalog mirrors the real [absolutdimension.com](https://www.absolutdimension.com/en) storefront — 128 products across 16 collections, bilingual (Polish primary, English secondary), with real product photography in `public/img/` and **per-size inventory**.
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) 18 or newer (Node 20 LTS recommended)
@@ -39,6 +41,24 @@ Because `npm run build` outputs a static `dist/` directory, any static host work
 
 Use **Vercel** or **Cloudflare Pages** for the fastest path: connect this GitHub repo, accept the detected Vite defaults (build `npm run build`, output `dist`), and every push to `main` will deploy automatically.
 
+## Catalog & inventory
+
+The catalog lives in [`src/lib/catalog.generated.ts`](src/lib/catalog.generated.ts),
+re-exported by `src/lib/data.ts`. It is **generated** from the live storefront — do
+not edit it by hand. To refresh it (and download any new product images into
+`public/img/`):
+
+```bash
+npm run ingest      # → scripts/ingest-absolutdimension.ts (cached in .ingest-tmp/)
+```
+
+Inventory is tracked **per size**. Each product carries a `stockBySize` map
+(e.g. `{ "36": 5, "38": 2 }`); `0` means that size is sold out and the size
+button is disabled on the product page. In Supabase mode the source of truth is
+the `product_variants` table, and `products.stock_quantity` is a cached total
+kept in sync by a trigger. The checkout API validates stock per `(product, size)`
+and the Stripe webhook decrements the exact size that was purchased.
+
 ## Supabase backend
 
 Products, collections, blog posts and user accounts can be backed by
@@ -52,12 +72,13 @@ bundled seed catalog and keeps accounts in `localStorage`.
 
 1. Create a new project at [app.supabase.com](https://app.supabase.com/).
 2. In the SQL editor, run [`supabase/schema.sql`](supabase/schema.sql) to create
-   tables, RLS policies and the `auth.users → public.profiles` trigger.
-3. Regenerate and apply the seed:
+   tables (including `product_variants` for per-size stock), RLS policies and the
+   `auth.users → public.profiles` trigger.
+3. Regenerate and apply the seed (products + per-size variants + collections + blog):
 
    ```bash
-   npx tsx supabase/seed.ts > supabase/seed.sql
-   # then paste into the SQL editor, or pipe via supabase CLI
+   npm run seed        # writes supabase/seed.sql
+   # then paste supabase/seed.sql into the SQL editor, or pipe via the supabase CLI
    ```
 
 4. Copy `.env.example` to `.env.local` and fill in:
@@ -115,7 +136,8 @@ Fill these in the Vercel project settings (for production) and `.env.local`
 Sign in with an admin account and open `/admin`. The panel includes:
 
 - **Products / Collections** — CRUD with image upload to the `product-images`
-  Supabase Storage bucket. Changes appear on the shop instantly.
+  Supabase Storage bucket, multi-image galleries, materials/colour, and a
+  **per-size stock editor**. Changes appear on the shop instantly.
 - **Orders** — list of paid orders from the Stripe webhook. Admins can change
   status (`paid → fulfilled → shipped`) and add tracking numbers.
 - **Subscribers** — everyone on the newsletter list, with CSV export.
